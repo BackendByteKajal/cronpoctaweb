@@ -11,6 +11,10 @@ export const PingApiRoute = {
   Ping: "/ping"
 }
 
+export const MeetingRoomApiRoute = {
+  MeetRoom: "/meetrooms",
+}
+
 export const RouteVersion = {
   V1: '/v1',
   V2: '/v2'

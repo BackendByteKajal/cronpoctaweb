@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 export class UserServices {
   public static async Register(userData: RegisterUserDto): Promise<any> {
     try {
-      this.isUserExists(userData.email);
+      await this.isUserExists(userData.email);
       const saltRounds = 10;
       let { password } = userData;
       const hash = await bcrypt.hash(password, saltRounds);

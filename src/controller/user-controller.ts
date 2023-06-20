@@ -19,9 +19,7 @@ export class UserController {
   
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     }catch(err:any){
-      ctx.body = {
-        message:err.message
-      }
+      ctx.body = Utils.errorResponse(400,err.message)
     }
   }
 
