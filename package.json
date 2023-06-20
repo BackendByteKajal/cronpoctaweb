@@ -4,6 +4,7 @@
   "description": "Training",
   "main": "app.ts",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "builder-pattern": "^2.2.0",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",

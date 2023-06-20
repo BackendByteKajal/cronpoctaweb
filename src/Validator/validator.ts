@@ -10,7 +10,8 @@ export class UserValidator {
           lastName : Joi.string().required(),
           employeeId: Joi.string().required(),
           email: Joi.string().required().email(),
-          password: Joi.string().required(),
+          password: Joi.string().required().min(8).max(15),
+          repeat_password : Joi.ref('password')
         }),
       };
       const req = ctx.request.body;
@@ -21,7 +22,9 @@ export class UserValidator {
       }
       return next();
     } catch (err: any) {
-      throw err;
+      ctx.body = {
+        message:err.message
+      }
     }
   }
 }

@@ -5,13 +5,15 @@ import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
 
 export class AuthServices {
   public static async LoginUser(email: string, password: string) {
     try {
       const user: any = await this.isUserExists(email);
 
-      if (password == user.password) {
+      const result = await bcrypt.compare(password,user.password)
+      if (result) {
         const token = this.createToken(user);
         // console.log(password, user.password, token);
         return Utils.successResponse(Message.LoginSuccess, token);
