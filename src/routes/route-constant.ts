@@ -7,6 +7,10 @@ export const UserApiRoutes = {
   Users:"/users",
 }
 
+export const PingApiRoute = {
+  Ping: "/ping"
+}
+
 export const RouteVersion = {
   V1: '/v1',
   V2: '/v2'

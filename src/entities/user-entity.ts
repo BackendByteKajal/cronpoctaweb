@@ -21,7 +21,7 @@ export class User extends BaseEntity{
     this._id = id;
   }
 
-  @Column()
+  @Column({nullable : true})
   public get userName(): string {
     return this._userName;
   }
