@@ -15,6 +15,10 @@ export const MeetingRoomApiRoute = {
   MeetRoom: "/meetrooms",
 }
 
+export const BookingApiRoute = {
+  BookMeetRoom: "/bookroom"
+}
+
 export const RouteVersion = {
   V1: '/v1',
   V2: '/v2'

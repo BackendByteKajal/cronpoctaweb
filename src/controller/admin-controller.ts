@@ -32,7 +32,5 @@ export class AdminController {
         }
   }
 }
-function convertMeetRoomToObj(ele: MeetingRoom): any {
-    throw new Error("Function not implemented.");
-}
+
 
