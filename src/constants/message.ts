@@ -5,5 +5,6 @@ export const Message = {
     LoginFailed:"Login Failed",
     MeetRoomAdded:"Meeting Room added Succesfully",
     AllMeetingRooms:"All Meeting Rooms are here",
-    SuccessBooking:"Your Booking completed successfully"
+    SuccessBooking:"Your Booking completed successfully",
+    ActiveBookings:"All Active Bookings are here..."
 }

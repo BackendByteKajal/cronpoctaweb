@@ -23,6 +23,7 @@ export class UserValidator {
       return next();
     } catch (err: any) {
       ctx.body = {
+        statusCode:400,
         message:err.message
       }
     }

@@ -7,8 +7,8 @@ import { BookingController } from "../controller/book-controller";
 export class BookRoute {
   public static routes(router: Router) {
 
-    router.post(BookingApiRoute.BookMeetRoom,BookingController.BookMeetRoom);
-    // router.get(MeetingRoomApiRoute.MeetRoom,AdminController.getAllMeetRooms);
+    router.post(BookingApiRoute.BookMeetRoom,BookingController.addBooking);
+    router.get(BookingApiRoute.Bookings,BookingController.activeBookings);
     
   }
 }
