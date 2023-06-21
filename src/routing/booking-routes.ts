@@ -9,6 +9,7 @@ export class BookRoute {
 
     router.post(BookingApiRoute.BookMeetRoom,BookingController.addBooking);
     router.get(BookingApiRoute.Bookings,BookingController.activeBookings);
+    router.post(BookingApiRoute.MyBookings,BookingController.bookingHistory)
     
   }
 }

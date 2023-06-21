@@ -17,7 +17,8 @@ export const MeetingRoomApiRoute = {
 
 export const BookingApiRoute = {
   BookMeetRoom: "/bookroom",
-  Bookings:"/bookings"
+  Bookings:"/bookings",
+  MyBookings:"/mybookings"
 }
 
 export const RouteVersion = {

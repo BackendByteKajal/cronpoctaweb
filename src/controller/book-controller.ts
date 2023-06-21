@@ -33,4 +33,18 @@ export class BookingController {
       ctx.body = Utils.errorResponse(400, err.message);
     }
   }
+
+  public static async bookingHistory(ctx:Context){
+    try{
+        const data = ctx.request.body as BookingRoomDto;
+
+        const {userId} = data;
+        console.log(userId);
+        const bookingData = await BookingServices.getBookingHistory(userId) ;
+
+        ctx.body = Utils.successResponse(Message.BookingHistory,bookingData)
+    }catch(err:any){
+        ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
 }

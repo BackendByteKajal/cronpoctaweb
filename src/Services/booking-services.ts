@@ -67,6 +67,22 @@ export class BookingServices {
     }
   }
 
+  public static async getBookingHistory(userId: number) {
+    try {
+      let myBookings = await Booking.findBy({ user_id: userId });
+
+      const bookingData = myBookings.map((booking) => {
+        return BookingResponseObj.convertBookingToObj(booking);
+      });
+      // console.log(bookingData)
+      const allBookings = await this.addExtraDetails(bookingData);
+      const allBookingsHistory = this.addDuration(allBookings);
+      return allBookingsHistory;
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
   public static async isMeetRoomExists(MeetRoomId: number) {
     try {
       const result = await MeetingRoom.findOneBy({
@@ -137,5 +153,31 @@ export class BookingServices {
     );
     console.log(updatedArray);
     return updatedArray;
+  }
+
+  public static addDuration(bookings: any) {
+    const bookingResponse = bookings.map((booking: any) => {
+      const [startHour, startMinute] = booking.startTime.split(":").map(Number);
+      const [endHour, endMinute] = booking.endTime.split(":").map(Number);
+
+      const totalStartMinutes = startHour * 60 + startMinute;
+      const totalEndMinutes = endHour * 60 + endMinute;
+
+      const duration = totalEndMinutes - totalStartMinutes;
+      const hours = Math.floor(duration / 60);
+      const remainingMinutes = duration % 60;
+      let durationTime = "";
+      if (hours == 0) {
+        durationTime = `${remainingMinutes}m`;
+      }
+      if (remainingMinutes == 0) {
+        durationTime = `${hours}h`;
+      }
+      if (hours != 0 && remainingMinutes != 0) {
+        durationTime = `${hours}h ${remainingMinutes}m`;
+      }
+      return { ...booking, duration: durationTime };
+    });
+    return bookingResponse;
   }
 }

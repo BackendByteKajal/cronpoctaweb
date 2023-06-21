@@ -6,5 +6,6 @@ export const Message = {
     MeetRoomAdded:"Meeting Room added Succesfully",
     AllMeetingRooms:"All Meeting Rooms are here",
     SuccessBooking:"Your Booking completed successfully",
-    ActiveBookings:"All Active Bookings are here..."
+    ActiveBookings:"All Active Bookings are here...",
+    BookingHistory:"All my Booking History is here..."
 }
