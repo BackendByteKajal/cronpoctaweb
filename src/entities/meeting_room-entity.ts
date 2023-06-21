@@ -20,7 +20,7 @@ export class MeetingRoom extends BaseEntity{
     this._id = id;
   }
 
-  @Column()
+  @Column({nullable:true})
   public get room_name(): string {
     return this._room_name;
   }
@@ -28,7 +28,7 @@ export class MeetingRoom extends BaseEntity{
     this._room_name = room_name;
   }
 
-  @Column()
+  @Column({nullable:true})
   public get capacity(): number {
     return this._capacity;
   }
@@ -36,7 +36,7 @@ export class MeetingRoom extends BaseEntity{
     this._capacity = capacity;
   }
 
-  @Column()
+  @Column({nullable:true})
   public get image_url(): string {
     return this._image_url;
   }
