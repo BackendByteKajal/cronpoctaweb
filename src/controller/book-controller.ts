@@ -47,4 +47,16 @@ export class BookingController {
         ctx.body = Utils.errorResponse(400,err.message);
     }
   }
+
+  public static async editBooking(ctx:Context){
+    try{
+      const id = ctx.params.id;
+      const editedData = ctx.request.body as BookingRoomDto;
+      const editedResponse = await BookingServices.doEditBookings(Number(id),editedData);
+      
+      ctx.body = Utils.successResponse(Message.EditedBooking,editedResponse);
+    }catch(err:any){
+      ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
 }

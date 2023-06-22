@@ -10,6 +10,8 @@ export class BookingServices {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
+      console.log("In bookMeetRoom");
+      console.log(meetRoomId,date,startTime,endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -79,6 +81,37 @@ export class BookingServices {
       const allBookingsHistory = this.addDuration(allBookings);
       return allBookingsHistory;
     } catch (err: any) {
+      throw err;
+    }
+  }
+
+  public static async doEditBookings(bookingId:number,bookingDetails:BookingRoomDto){
+    try{
+      let booking:any = await Booking.findOneBy({id:bookingId});
+      // console.log(booking);
+      const data = BookingResponseObj.convertBookingToObj(booking);
+      // const data = Booking.BookingRoomObj(booking);
+      const editedBookingData = {
+        ...data,
+        ...bookingDetails
+      }
+      //check wheather slot is available or not
+      const result = await this.roomAvailability(
+        editedBookingData.meetRoomId,
+        editedBookingData.date,
+        editedBookingData.startTime,
+        editedBookingData.endTime
+      );
+
+      if(result){
+        const result = Booking.BookingRoomObj(editedBookingData);
+        await Booking.update(bookingId,result);
+        const bookingData:any = await Booking.findOneBy({id:bookingId});
+        const editedData = BookingResponseObj.convertBookingToObj(bookingData);
+        return editedData; 
+      }
+        
+    }catch(err:any){
       throw err;
     }
   }
