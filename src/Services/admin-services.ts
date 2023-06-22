@@ -15,7 +15,10 @@ export class AdminServices {
   public static async allMeetingRooms(){
     try{
         const meetRooms = await MeetingRoom.find();
-        return meetRooms;
+        if(meetRooms){
+          return meetRooms;
+        }
+        throw new Error("No results Found");
     }catch(err:any){
         throw err;
     }
