@@ -3,14 +3,18 @@ import { User } from "../../entities/user-entity";
 
 export class UserObject {
   id: number;
-  firstName: string;
+  userName: string;
   email: string;
+  lastName:string;
+  employeeId:string;
 
   public static convertToObj(userObj: User): UserObject {
     const resp = Builder<UserObject>()
       .id(userObj.id)
       .email(userObj.email)
-      // .firstName(userObj.first_name)
+      .userName(userObj.user_name)
+      .lastName(userObj.last_name)
+      .employeeId(userObj.employee_id);
 
 
       return resp.build();

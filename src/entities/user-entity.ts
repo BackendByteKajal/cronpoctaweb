@@ -6,7 +6,7 @@ import { RegisterUserDto } from "../dtos/request/user-register-dto";
 export class User extends BaseEntity{
 
   private _id: number;
-  private _userName: string;
+  private _user_name: string;
   private _last_name: string;
   private _employee_id: string;
   private _email: string;
@@ -21,12 +21,12 @@ export class User extends BaseEntity{
     this._id = id;
   }
 
-  @Column()
-  public get userName(): string {
-    return this._userName;
+  @Column({nullable : true})
+  public get user_name(): string {
+    return this._user_name;
   }
-  public set userName(userName: string) {
-    this._userName = userName;
+  public set user_name(user_name: string) {
+    this._user_name = user_name;
   }
 
   @Column({nullable:true})
@@ -37,7 +37,7 @@ export class User extends BaseEntity{
     this._last_name = last_name;
   }
 
-  @Column()
+  @Column({ unique: true })
   public get employee_id(): string {
     return this._employee_id;
   }
@@ -69,13 +69,13 @@ export class User extends BaseEntity{
   @DeleteDateColumn()
   deleted_at: Date; // Deletion date
 
-  public static fromRegisterObj(registerObj: RegisterUserDto): User {
+  public static fromRegisterObj(registerObj: RegisterUserDto,hash_password:string): User {
     const obj = Builder<User>()
       .email(registerObj.email)
-      .userName(registerObj.userName)
+      .user_name(registerObj.userName)
       .last_name(registerObj.lastName)
       .employee_id(registerObj.employeeId)
-      .password(registerObj.password)
+      .password(hash_password)
       .build();
 
     return obj;

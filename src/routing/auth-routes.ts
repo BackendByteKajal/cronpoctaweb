@@ -7,5 +7,7 @@ import { Context } from "koa";
 export class AuthRoute {
   public static routes(router: Router) {
     router.post(AuthApiRoutes.Login, AuthController.login);
+    router.post(AuthApiRoutes.AdminLogin,AuthController.loginAdmin)
+
   }
 }

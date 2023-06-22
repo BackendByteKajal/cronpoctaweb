@@ -5,13 +5,17 @@ import { AppRoutes } from "./routes";
 import json from 'koa-json';
 // import { pgConnection } from "./connection/postgres-connection";
 import { PostgresDbConnection } from "./connection/postgres-connection";
+const cors = require('@koa/cors');
 
 
 const app = new Koa();
 const router = new Router();
 
+
 app.use(bodyParser());
 app.use(json());
+app.use(cors());
+
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());

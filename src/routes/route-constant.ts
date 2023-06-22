@@ -1,10 +1,31 @@
 export const AuthApiRoutes = {
-  Login:"/login"
+  Login:"/login",
+  AdminLogin:"/admin/login"
 };
 
 export const UserApiRoutes = {
   Register:"/register",
   Users:"/users",
+}
+
+export const AdminApiRoutes = {
+  
+}
+
+export const PingApiRoute = {
+  Ping: "/ping"
+}
+
+export const MeetingRoomApiRoute = {
+  MeetRoom: "/meetrooms",
+}
+
+export const BookingApiRoute = {
+  BookMeetRoom: "/bookroom",
+  Bookings:"/bookings",
+  MyBookings:"/mybookings",
+  EditBooking:"/bookings/:id",
+  DeleteBooking:"/bookings/:id"
 }
 
 export const RouteVersion = {
