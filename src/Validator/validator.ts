@@ -10,7 +10,7 @@ export class UserValidator {
           lastName : Joi.string().required(),
           employeeId: Joi.string().required(),
           email: Joi.string().required().email(),
-          password: Joi.string().required().min(8).max(15),
+          password: Joi.string().required().min(8).max(15).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
           repeat_password : Joi.ref('password')
         }),
       };
