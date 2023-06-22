@@ -3,15 +3,37 @@ import { BookingApiRoute } from "../routes/route-constant";
 import { AdminController } from "../controller/admin-controller";
 import { UserController } from "../controller/user-controller";
 import { BookingController } from "../controller/book-controller";
+import { AuthenticateMiddleware } from "../Middleware/Authentication";
+import { AccessValidation } from "../Validator/access-validation";
 
 export class BookRoute {
   public static routes(router: Router) {
-
-    router.post(BookingApiRoute.BookMeetRoom,BookingController.addBooking);
-    router.get(BookingApiRoute.Bookings,BookingController.activeBookings);
-    router.post(BookingApiRoute.MyBookings,BookingController.bookingHistory);
-    router.patch(BookingApiRoute.EditBooking,BookingController.editBooking);
-    router.delete(BookingApiRoute.DeleteBooking,BookingController.deleteBooking)
-    
+    router.post(
+      BookingApiRoute.BookMeetRoom,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.addBooking
+    );
+    router.get(
+      BookingApiRoute.Bookings,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.activeBookings
+    );
+    router.post(
+      BookingApiRoute.MyBookings,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.bookingHistory
+    );
+    router.patch(
+      BookingApiRoute.EditBooking,
+      AuthenticateMiddleware.AuthenticateUser,
+      AccessValidation.editDeleteValidation,
+      BookingController.editBooking
+    );
+    router.delete(
+      BookingApiRoute.DeleteBooking,
+      AuthenticateMiddleware.AuthenticateUser,
+      AccessValidation.editDeleteValidation,
+      BookingController.deleteBooking
+    );
   }
 }
