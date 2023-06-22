@@ -8,5 +8,6 @@ export const Message = {
     SuccessBooking:"Your Booking completed successfully",
     ActiveBookings:"All Active Bookings are here...",
     BookingHistory:"All my Booking History is here...",
-    EditedBooking: "Your Booking updated Successfully"
+    EditedBooking: "Your Booking updated Successfully",
+    DeletedBooking:"Your Booking deleted Successfully"
 }

@@ -11,6 +11,7 @@ export class BookRoute {
     router.get(BookingApiRoute.Bookings,BookingController.activeBookings);
     router.post(BookingApiRoute.MyBookings,BookingController.bookingHistory);
     router.patch(BookingApiRoute.EditBooking,BookingController.editBooking);
+    router.delete(BookingApiRoute.DeleteBooking,BookingController.deleteBooking)
     
   }
 }

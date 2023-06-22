@@ -11,7 +11,7 @@ export class BookingServices {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
       console.log("In bookMeetRoom");
-      console.log(meetRoomId,date,startTime,endTime);
+      console.log(meetRoomId, date, startTime, endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -85,16 +85,19 @@ export class BookingServices {
     }
   }
 
-  public static async doEditBookings(bookingId:number,bookingDetails:BookingRoomDto){
-    try{
-      let booking:any = await Booking.findOneBy({id:bookingId});
+  public static async doEditBookings(
+    bookingId: number,
+    bookingDetails: BookingRoomDto
+  ) {
+    try {
+      let booking: any = await Booking.findOneBy({ id: bookingId });
       // console.log(booking);
       const data = BookingResponseObj.convertBookingToObj(booking);
       // const data = Booking.BookingRoomObj(booking);
       const editedBookingData = {
         ...data,
-        ...bookingDetails
-      }
+        ...bookingDetails,
+      };
       //check wheather slot is available or not
       const result = await this.roomAvailability(
         editedBookingData.meetRoomId,
@@ -103,15 +106,28 @@ export class BookingServices {
         editedBookingData.endTime
       );
 
-      if(result){
+      if (result) {
         const result = Booking.BookingRoomObj(editedBookingData);
-        await Booking.update(bookingId,result);
-        const bookingData:any = await Booking.findOneBy({id:bookingId});
+        await Booking.update(bookingId, result);
+        const bookingData: any = await Booking.findOneBy({ id: bookingId });
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
-        return editedData; 
+        return editedData;
       }
-        
-    }catch(err:any){
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+  public static async doDeleteBooking(bookingId: number) {
+    try {
+      const bookingData = await Booking.findOneBy({ id: bookingId });
+      if (bookingData) {
+        await Booking.delete(bookingId);
+
+        return BookingResponseObj.convertBookingToObj(bookingData);
+      }
+      throw new Error("Booking with this ID not found");
+    } catch (err: any) {
       throw err;
     }
   }

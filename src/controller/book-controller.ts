@@ -59,4 +59,15 @@ export class BookingController {
       ctx.body = Utils.errorResponse(400,err.message);
     }
   }
+
+  public static async deleteBooking(ctx:Context){
+    try{
+      const id = ctx.params.id;
+      const deletedDataResponse = await BookingServices.doDeleteBooking(Number(id));
+
+      ctx.body = Utils.successResponse(Message.DeletedBooking,deletedDataResponse);
+    }catch(err:any){
+      ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
 }

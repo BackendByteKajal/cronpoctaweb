@@ -1,6 +1,7 @@
 import { Context } from "koa";
 import { AuthServices } from "../Services/auth-services";
 import { LoginUserDto } from "../dtos/request/user-login-dto";
+import { Utils } from "../utils/utils";
 
 export class AuthController {
   public static async login(ctx: Context) {
@@ -13,7 +14,7 @@ export class AuthController {
         data: data,
       };
     }catch(err:any){
-      throw err;
+      ctx.body = Utils.errorResponse(404,err.message);
     }
   }
 }
