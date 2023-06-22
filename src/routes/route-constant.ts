@@ -1,10 +1,15 @@
 export const AuthApiRoutes = {
-  Login:"/login"
+  Login:"/login",
+  AdminLogin:"/admin/login"
 };
 
 export const UserApiRoutes = {
   Register:"/register",
   Users:"/users",
+}
+
+export const AdminApiRoutes = {
+  
 }
 
 export const PingApiRoute = {

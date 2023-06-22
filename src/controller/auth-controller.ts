@@ -15,4 +15,15 @@ export class AuthController {
       ctx.body = Utils.errorResponse(404,err.message);
     }
   }
+
+  public static async loginAdmin(ctx: Context) {
+    try{
+      const body = ctx.request.body as LoginUserDto;
+      const data: any = await AuthServices.loginAdmin(body.email, body.password);
+  
+      ctx.body = Utils.successResponse(Message.LoginSuccess,data);
+    }catch(err:any){
+      ctx.body = Utils.errorResponse(404,err.message);
+    }
+  }
 }
