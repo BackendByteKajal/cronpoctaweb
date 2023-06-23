@@ -7,6 +7,7 @@ export class MeetRoomObject {
   meetRoomName: string;
   capacity: number;
   imageUrl: string;
+  status: string;
 
   public static convertMeetRoomToObj(meetRoomObj: MeetingRoom): MeetRoomObject {
     const resp = Builder<MeetRoomObject>()
@@ -14,6 +15,7 @@ export class MeetRoomObject {
       .meetRoomName(meetRoomObj.room_name)
       .capacity(meetRoomObj.capacity)
       .imageUrl(meetRoomObj.image_url)
+      .status(meetRoomObj.status)
 
 
       return resp.build();

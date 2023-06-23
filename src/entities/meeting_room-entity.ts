@@ -10,6 +10,7 @@ export class MeetingRoom extends BaseEntity{
   private _room_name: string;
   private _capacity: number;
   private _image_url: string;
+  private _status: string;
   
 
   @PrimaryGeneratedColumn()
@@ -44,6 +45,14 @@ export class MeetingRoom extends BaseEntity{
     this._image_url = image_url;
   }
 
+  @Column({default:"active"})
+  public get status(): string {
+    return this._status;
+  }
+  public set status(status: string) {
+    this._status = status;
+  }
+
   @CreateDateColumn()
   created_at: Date; // Creation date
 
@@ -57,7 +66,8 @@ export class MeetingRoom extends BaseEntity{
     const obj = Builder<MeetingRoom>()
       .room_name(MeetRoomObj.meetRoomName)
       .capacity(MeetRoomObj.capacity)
-      .image_url(MeetRoomObj.imageUrl) 
+      .image_url(MeetRoomObj.imageUrl)
+      .status(MeetRoomObj.status) 
       .build();
 
     return obj;

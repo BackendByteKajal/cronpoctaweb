@@ -31,6 +31,29 @@ export class AdminController {
             throw err;
         }
   }
+
+  public static async editMeetRoom(ctx:Context){
+    try{
+      const param = ctx.params.id;
+      const dataToEdit = ctx.request.body as MeetRoomDto;
+      const result = await AdminServices.doEditMeetRoom(Number(param),dataToEdit);
+
+      ctx.body = Utils.successResponse("Meeting Data Updated",result);
+    }catch(err:any){
+      ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
+
+  public static async meetRoomHistory(ctx:Context){
+    try{
+      const meetRoomId = ctx.params.id;
+      const meetRoomHistory = await AdminServices.getMeetRoomHistory(meetRoomId);
+
+      ctx.body = Utils.successResponse(Message.MeetingRoomHistory,meetRoomHistory);
+    }catch(err:any){
+      throw err;
+    }
+  }
 }
 
 
