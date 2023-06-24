@@ -4,6 +4,7 @@
   "description": "Training",
   "main": "app.ts",
   "dependencies": {
+    "@joi/date": "^2.1.0",
     "@koa/cors": "^4.0.0",
     "bcrypt": "^5.1.0",
     "builder-pattern": "^2.2.0",
