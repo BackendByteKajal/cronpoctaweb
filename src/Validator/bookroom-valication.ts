@@ -28,18 +28,18 @@ export class BookMeetRoomValidations {
         // console.log(validationResponse);
         throw validationResponse.error;
       }
-    //   const data = this.dateValidation(meetRoomDetails.date);
-      const todays_date = moment().format("DD/MM/YYYY");
-      if(meetRoomDetails.date < todays_date){
-        throw new Error("Please Enter Valid Date")
-      }
-    //   this.timeValidation(meetRoomDetails.startTime,meetRoomDetails.endTime);
-      const start_time = meetRoomDetails.startTime.replace(":",".");
-      const end_time = meetRoomDetails.endTime.replace(":",".");
-      console.log(start_time,end_time);
-      if(end_time <= start_time){
-        throw new Error("Please enter valid timing");
-      }
+      BookMeetRoomValidations.dateValidation(meetRoomDetails.date);
+    //   const todays_date = moment().format("DD/MM/YYYY");
+    //   if(meetRoomDetails.date < todays_date){
+    //     throw new Error("Please Enter Valid Date")
+    //   }
+      BookMeetRoomValidations.timeValidation(meetRoomDetails.startTime,meetRoomDetails.endTime);
+    //   const start_time = meetRoomDetails.startTime.replace(":",".");
+    //   const end_time = meetRoomDetails.endTime.replace(":",".");
+    //   console.log(start_time,end_time);
+    //   if(end_time <= start_time){
+    //     throw new Error("Please enter valid timing");
+    //   }
       
 
       return next();
@@ -48,32 +48,38 @@ export class BookMeetRoomValidations {
     }
   }
 
-//   public static dateValidation(date:string){
-//     try{
-//         const todays_date = moment().format("DD/MM/YYYY");
-//         if(date < todays_date){
-//           throw new Error("Please Enter Valid Date")
-//         }
-//         return true;
-//     }catch(err:any){
-//         throw err;
-//     }
+  public static dateValidation(bookingDate:string){
+    try{
+        const todays_date = moment().format("DD/MM/YYYY");
+        const [day1, month1, year1] = todays_date.split('/');
+        const [day2, month2, year2] = bookingDate.split('/');
 
-//   }
+        const dateObj1 = new Date(`${year1}-${month1}-${day1}`);
+        const dateObj2 = new Date(`${year2}-${month2}-${day2}`);
 
-//   public static timeValidation(startTime:string, endTime:string){
-//     try{
+        if (dateObj1 > dateObj2) {
+            throw new Error("Please Enter Valid Date"); // date1 is smaller
+        } 
+        return;
+    }catch(err:any){
+        throw err;
+    }
+
+  }
+
+  public static timeValidation(startTime:string, endTime:string){
+    try{
         
-//       const start_time = startTime.replace(":",".");
-//       const end_time = endTime.replace(":",".");
-//       console.log(start_time,end_time);
-//       if(end_time <= start_time){
-//         throw new Error("Please enter valid timing");
-//       }
-//         return;
-//     }catch(err:any){
-//         throw err;
-//     }
+      const start_time = startTime.replace(":",".");
+      const end_time = endTime.replace(":",".");
+      console.log(start_time,end_time);
+      if(end_time <= start_time){
+        throw new Error("Please enter valid timing");
+      }
+        return;
+    }catch(err:any){
+        throw err;
+    }
 
-//   }
+  }
 }

@@ -14,7 +14,8 @@ export class Booking extends BaseEntity{
   private _start_time: string;
   private _end_time: string;
   private _status: string;
-  
+  private _guests: string;
+  private _description: string;
 
   @PrimaryGeneratedColumn()
   public get id(): number {
