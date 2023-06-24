@@ -1,0 +1,79 @@
+import Joi from "joi";
+import { Context, Next } from "koa";
+import { Utils } from "../utils/utils";
+import { BookingRoomDto } from "../dtos/request/booking-dto";
+const moment = require("moment");
+
+export class BookMeetRoomValidations {
+  public static bookMeetRoom(ctx: Context, next: Next) {
+    try {
+      const createJSON = {
+        body: Joi.object({
+            userId:Joi.required(),
+            meetRoomId:Joi.required(),
+        title: Joi
+                 .string()
+                 .required()
+                 .trim()
+                 .min(1)
+                 .max(100),
+        date: Joi.required(),
+        startTime: Joi.required(),
+        endTime: Joi.required()     
+        }),
+      };
+      const meetRoomDetails:any = ctx.request.body;
+      const validationResponse = createJSON.body.validate(meetRoomDetails);
+      if (validationResponse && validationResponse.error) {
+        // console.log(validationResponse);
+        throw validationResponse.error;
+      }
+    //   const data = this.dateValidation(meetRoomDetails.date);
+      const todays_date = moment().format("DD/MM/YYYY");
+      if(meetRoomDetails.date < todays_date){
+        throw new Error("Please Enter Valid Date")
+      }
+    //   this.timeValidation(meetRoomDetails.startTime,meetRoomDetails.endTime);
+      const start_time = meetRoomDetails.startTime.replace(":",".");
+      const end_time = meetRoomDetails.endTime.replace(":",".");
+      console.log(start_time,end_time);
+      if(end_time <= start_time){
+        throw new Error("Please enter valid timing");
+      }
+      
+
+      return next();
+    } catch (err: any) {
+      ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
+
+//   public static dateValidation(date:string){
+//     try{
+//         const todays_date = moment().format("DD/MM/YYYY");
+//         if(date < todays_date){
+//           throw new Error("Please Enter Valid Date")
+//         }
+//         return true;
+//     }catch(err:any){
+//         throw err;
+//     }
+
+//   }
+
+//   public static timeValidation(startTime:string, endTime:string){
+//     try{
+        
+//       const start_time = startTime.replace(":",".");
+//       const end_time = endTime.replace(":",".");
+//       console.log(start_time,end_time);
+//       if(end_time <= start_time){
+//         throw new Error("Please enter valid timing");
+//       }
+//         return;
+//     }catch(err:any){
+//         throw err;
+//     }
+
+//   }
+}

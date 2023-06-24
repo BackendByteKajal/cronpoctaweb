@@ -178,7 +178,7 @@ export class BookingServices {
       if (clash_time.length == 0) {
         return true;
       }
-      throw new Error("Room is Booked at this time slot");
+      throw new Error("Meeting room is already occupied.");
     } catch (err: any) {
       throw err;
     }

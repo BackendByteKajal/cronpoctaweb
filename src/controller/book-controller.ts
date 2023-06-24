@@ -25,7 +25,7 @@ export class BookingController {
         allBookings.todays_bookings.length == 0 &&
         allBookings.upcoming_bookings.length == 0
       ) {
-        throw new Error("No Bookings Found");
+        throw new Error("No meetings found");
       }
 
       ctx.body = Utils.successResponse(Message.ActiveBookings, allBookings);

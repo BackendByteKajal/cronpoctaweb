@@ -54,7 +54,7 @@ export class AuthServices {
         where: { email: email },
       });
       if (!user) {
-        throw Error("User Does not Exists");
+        throw new Error("User Does not Exists");
       }
       return user;
     } catch (err: any) {
