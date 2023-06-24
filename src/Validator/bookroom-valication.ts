@@ -17,7 +17,7 @@ export class BookMeetRoomValidations {
                  .trim()
                  .min(1)
                  .max(100),
-        date: Joi.required(),
+        date: Joi.date().required(),
         startTime: Joi.required(),
         endTime: Joi.required()     
         }),
@@ -58,7 +58,7 @@ export class BookMeetRoomValidations {
         const dateObj2 = new Date(`${year2}-${month2}-${day2}`);
 
         if (dateObj1 > dateObj2) {
-            throw new Error("Please Enter Valid Date"); // date1 is smaller
+            throw new Error("Please Enter Valid Date"); 
         } 
         return;
     }catch(err:any){
