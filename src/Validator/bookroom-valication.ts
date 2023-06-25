@@ -14,8 +14,8 @@ export class BookMeetRoomValidations {
           meetRoomId: Joi.required(),
           title: Joi.string().required().trim().min(1).max(100),
           date: Joi.date().format("DD/MM/YYYY").required(),
-          startTime: Joi.required(),
-          endTime: Joi.required(),
+          startTime: Joi.string().pattern(/^[0-2][0-3]:[0-5][0-9]$/).required(),
+          endTime: Joi.string().pattern(/^[0-2][0-3]:[0-5][0-9]$/).required(),
         }),
       };
       const meetRoomDetails: any = ctx.request.body;
@@ -24,7 +24,11 @@ export class BookMeetRoomValidations {
         // console.log(validationResponse);
         throw validationResponse.error;
       }
-      BookMeetRoomValidations.dateValidation(meetRoomDetails.date);
+
+      const result = BookMeetRoomValidations.dateValidation(meetRoomDetails.date);
+      if(result == -1){
+        throw new Error("Please Enter Valid Date")
+      }
 
       BookMeetRoomValidations.timeValidation(
         meetRoomDetails.startTime,
@@ -43,13 +47,16 @@ export class BookMeetRoomValidations {
       const [day1, month1, year1] = todays_date.split("/");
       const [day2, month2, year2] = bookingDate.split("/");
 
-      const dateObj1 = new Date(`${year1}-${month1}-${day1}`);
-      const dateObj2 = new Date(`${year2}-${month2}-${day2}`);
+      const todayDateObj = new Date(`${year1}-${month1}-${day1}`);
+      const bookingDateObj = new Date(`${year2}-${month2}-${day2}`);
 
-      if (dateObj1 > dateObj2) {
-        throw new Error("Please Enter Valid Date");
+      if (todayDateObj > bookingDateObj) {
+        // throw new Error("Please Enter Valid Date");
+        return -1;
+      }else if(todayDateObj < bookingDateObj){
+        return 1
       }
-      return;
+      return 0;
     } catch (err: any) {
       throw err;
     }
