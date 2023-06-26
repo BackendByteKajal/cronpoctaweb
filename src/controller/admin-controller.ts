@@ -27,8 +27,8 @@ export class AdminController {
             })
 
             ctx.body = Utils.successResponse(Message.AllMeetingRooms,response);
-        }catch(err){
-            throw err;
+        }catch(err:any){
+            ctx.body = Utils.errorResponse(400,err.message);
         }
   }
 
@@ -51,7 +51,7 @@ export class AdminController {
 
       ctx.body = Utils.successResponse(Message.MeetingRoomHistory,meetRoomHistory);
     }catch(err:any){
-      throw err;
+      ctx.body = Utils.errorResponse(400,err.message);
     }
   }
 }

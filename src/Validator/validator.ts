@@ -53,3 +53,40 @@ export class UserValidator {
     }
   }
 }
+
+export class AdminValidator{
+  public static addMeetRoomValidation(ctx:Context,next:Next){
+    try{
+      const createJSON = {
+        body: Joi.object({
+          meetRoomName: Joi
+                    .string()
+                    .trim()
+                    .required()
+                    .max(20)
+                    .min(3),
+          capacity : Joi
+                    .number()
+                    .integer(),
+                    
+          imageUrl: Joi
+                    .string()
+                    .required()
+                  }),
+                }
+      const req = ctx.request.body;
+      const validationResponse = createJSON.body.validate(req);
+      if (validationResponse && validationResponse.error) {
+        // console.log(validationResponse);
+        throw validationResponse.error;
+      }
+      return next();
+    }catch(err:any){
+      ctx.body = Utils.errorResponse(400,err.message);
+    }
+  }
+}
+
+// "meetRoomName":"Nitrogen",
+//   "capacity":12,
+//   "imageUrl":"https://www.executivecentre.com/wp-content/uploads/sites/40/2020/10/i
