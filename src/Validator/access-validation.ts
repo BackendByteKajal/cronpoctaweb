@@ -31,6 +31,8 @@ export class AccessValidation {
       }
       throw new Error("You do not have access to this booking");
     } catch (err: any) {
+      // console.log(err);
+      ctx.status = 400;
       ctx.body = Utils.errorResponse(400, err.message);
     }
   }

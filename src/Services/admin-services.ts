@@ -32,6 +32,9 @@ export class AdminServices {
   public static async doEditMeetRoom(meetRoomId:number,roomDetails:MeetRoomDto){
     try{
       const meetRoom:any = await MeetingRoom.findOneBy({id:meetRoomId});
+      if(!meetRoom){
+        throw new Error("Meeting Room Does not Exists");
+      }
       const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
       const editedMeetingData = {
         ...meetRoomObj,
@@ -50,6 +53,9 @@ export class AdminServices {
     try{
       const meetRoomHistory = await Booking.findBy({ meetroom_id:meetRoomId});
 
+      if(meetRoomHistory.length==0){
+        throw new Error("No History Found")
+      }
       const historyDetails = meetRoomHistory.map((data)=>{
         return BookingResponseObj.convertBookingToObj(data);
       })

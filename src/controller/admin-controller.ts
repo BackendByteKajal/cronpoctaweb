@@ -14,7 +14,8 @@ export class AdminController {
         ctx.body = Utils.successResponse(Message.MeetRoomAdded,result);
 
     } catch (err: any) {
-      throw err;
+      ctx.status = 400;
+      ctx.body = Utils.errorResponse(400,err.message);
     }
   }
 
@@ -28,7 +29,8 @@ export class AdminController {
 
             ctx.body = Utils.successResponse(Message.AllMeetingRooms,response);
         }catch(err:any){
-            ctx.body = Utils.errorResponse(400,err.message);
+            ctx.status = 404;
+            ctx.body = Utils.errorResponse(404,err.message);
         }
   }
 
@@ -40,6 +42,7 @@ export class AdminController {
 
       ctx.body = Utils.successResponse("Meeting Data Updated",result);
     }catch(err:any){
+      ctx.status = 404;
       ctx.body = Utils.errorResponse(400,err.message);
     }
   }
@@ -51,6 +54,7 @@ export class AdminController {
 
       ctx.body = Utils.successResponse(Message.MeetingRoomHistory,meetRoomHistory);
     }catch(err:any){
+      ctx.status = 400;
       ctx.body = Utils.errorResponse(400,err.message);
     }
   }

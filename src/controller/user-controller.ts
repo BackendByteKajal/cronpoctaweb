@@ -17,9 +17,11 @@ export class UserController {
       const user = await UserServices.Register(data);
       const response = UserObject.convertToObj(user);
   
+      ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     }catch(err:any){
-      ctx.body = Utils.errorResponse(400,err.message)
+      ctx.status = 409;
+      ctx.body = Utils.errorResponse(409,err.message)
     }
   }
 

@@ -49,6 +49,7 @@ export class UserValidator {
       }
       return next();
     } catch (err: any) {
+      ctx.status = 400;
       ctx.body = Utils.errorResponse(400,err.message);
     }
   }
@@ -82,6 +83,7 @@ export class AdminValidator{
       }
       return next();
     }catch(err:any){
+      ctx.status = 400;
       ctx.body = Utils.errorResponse(400,err.message);
     }
   }

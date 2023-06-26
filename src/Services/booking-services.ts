@@ -10,8 +10,8 @@ export class BookingServices {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
-      console.log("In bookMeetRoom");
-      console.log(meetRoomId, date, startTime, endTime);
+      // console.log("In bookMeetRoom");
+      // console.log(meetRoomId, date, startTime, endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,

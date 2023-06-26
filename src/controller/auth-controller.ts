@@ -12,6 +12,7 @@ export class AuthController {
   
       ctx.body = Utils.successResponse(Message.LoginSuccess,data);
     }catch(err:any){
+      ctx.status = 404;
       ctx.body = Utils.errorResponse(404,err.message);
     }
   }
@@ -23,6 +24,7 @@ export class AuthController {
   
       ctx.body = Utils.successResponse(Message.LoginSuccess,data);
     }catch(err:any){
+      ctx.status = 404;
       ctx.body = Utils.errorResponse(404,err.message);
     }
   }
