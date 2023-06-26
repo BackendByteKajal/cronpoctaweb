@@ -2,6 +2,7 @@
 import { Context, Next } from "koa";
 import { Utils } from "../utils/utils";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { AccessValidation } from "./access-validation";
 const moment = require("moment");
 const Joi = require("joi").extend(require("@joi/date"));
 
@@ -26,14 +27,21 @@ export class BookMeetRoomValidations {
       }
 
       const result = BookMeetRoomValidations.dateValidation(meetRoomDetails.date);
+      const currentTime = AccessValidation.getCurrentTime();
+      const timeResult = BookMeetRoomValidations.timeValidation(meetRoomDetails.startTime,currentTime)
       if(result == -1){
         throw new Error("Please Enter Valid Date")
       }
-
-      BookMeetRoomValidations.timeValidation(
+      if(result == 0 && timeResult == true){
+        throw new Error("Please Enter Valid Time")
+      }
+      const timePossibility = BookMeetRoomValidations.timeValidation(
         meetRoomDetails.startTime,
         meetRoomDetails.endTime
       );
+      if(timePossibility == false){
+        throw new Error("Please Enter Valid Time")
+      }
 
       return next();
     } catch (err: any) {
@@ -68,9 +76,9 @@ export class BookMeetRoomValidations {
       const end_time = endTime.replace(":", ".");
       console.log(start_time, end_time);
       if (end_time <= start_time) {
-        throw new Error("Please enter valid timing");
+        return false; 
       }
-      return;
+      return true;
     } catch (err: any) {
       throw err;
     }

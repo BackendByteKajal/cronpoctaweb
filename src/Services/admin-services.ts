@@ -3,6 +3,7 @@ import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { MeetRoomObject } from "../dtos/response/meetroom-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
+import { BookingServices } from "./booking-services";
 
 export class AdminServices {
   public static async addMeetRoom(data: MeetRoomDto){
@@ -52,7 +53,8 @@ export class AdminServices {
       const historyDetails = meetRoomHistory.map((data)=>{
         return BookingResponseObj.convertBookingToObj(data);
       })
-      return historyDetails;
+      const meetRoomData = BookingServices.addDuration(historyDetails);
+      return meetRoomData;
     }catch(err:any){
       throw err;
     }

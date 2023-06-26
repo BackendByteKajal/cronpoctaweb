@@ -87,6 +87,3 @@ export class AdminValidator{
   }
 }
 
-// "meetRoomName":"Nitrogen",
-//   "capacity":12,
-//   "imageUrl":"https://www.executivecentre.com/wp-content/uploads/sites/40/2020/10/i
