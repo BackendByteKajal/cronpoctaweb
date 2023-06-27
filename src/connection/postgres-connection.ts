@@ -13,7 +13,8 @@ export class PostgresDbConnection {
       synchronize: configData.pg.sync,
       entities: configData.pg.entities,
       // logging: true,
-      schema: configData.pg.schema
+      schema: configData.pg.schema,
+      ssl:true
     });
     console.log(typeof pgConnection);
     pgConnection
