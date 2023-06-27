@@ -17,6 +17,8 @@ export class BookMeetRoomValidations {
           date: Joi.date().format("DD/MM/YYYY").required(),
           startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
           endTime: Joi.string().pattern(/^^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+          guests: Joi.string(),
+          description:Joi.string()
         }),
       };
       const meetRoomDetails: any = ctx.request.body;
