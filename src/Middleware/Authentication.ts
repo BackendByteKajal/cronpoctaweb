@@ -1,5 +1,7 @@
 import { Context } from "koa";
 import { configData } from "../config/config";
+import { Utils } from "../utils/utils";
+import { Message } from "../constants/message";
 
 const jwt = require("jsonwebtoken");
 
@@ -12,10 +14,8 @@ export class AuthenticateMiddleware {
 
       await next();
     } else {
-      ctx.body = {
-        status: 401,
-        message: "Not Authenticated",
-      };
+      ctx.status = 401;
+      ctx.body = Utils.errorResponse(401,Message.AuthenticationFailed);
     }
   }
 }

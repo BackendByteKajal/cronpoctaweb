@@ -17,9 +17,11 @@ export class UserController {
       const user = await UserServices.Register(data);
       const response = UserObject.convertToObj(user);
   
+      ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     }catch(err:any){
-      ctx.body = Utils.errorResponse(400,err.message)
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message)
     }
   }
 
@@ -32,7 +34,8 @@ export class UserController {
       ctx.body = Utils.successResponse(Message.AllUsers, allUsers);
 
     }catch(err:any){
-      throw err;
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message)
     }
   }
 }

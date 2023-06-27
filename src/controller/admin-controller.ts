@@ -14,7 +14,8 @@ export class AdminController {
         ctx.body = Utils.successResponse(Message.MeetRoomAdded,result);
 
     } catch (err: any) {
-      throw err;
+      ctx.status = 400;
+      ctx.body = Utils.errorResponse(400,err.message);
     }
   }
 
@@ -27,9 +28,35 @@ export class AdminController {
             })
 
             ctx.body = Utils.successResponse(Message.AllMeetingRooms,response);
-        }catch(err){
-            throw err;
+        }catch(err:any){
+            ctx.status = err.status;
+            ctx.body = Utils.errorResponse(err.status,err.message);
         }
+  }
+
+  public static async editMeetRoom(ctx:Context){
+    try{
+      const param = ctx.params.id;
+      const dataToEdit = ctx.request.body as MeetRoomDto;
+      const result = await AdminServices.doEditMeetRoom(Number(param),dataToEdit);
+
+      ctx.body = Utils.successResponse("Meeting Data Updated",result);
+    }catch(err:any){
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message);
+    }
+  }
+
+  public static async meetRoomHistory(ctx:Context){
+    try{
+      const meetRoomId = ctx.params.id;
+      const meetRoomHistory = await AdminServices.getMeetRoomHistory(meetRoomId);
+
+      ctx.body = Utils.successResponse(Message.MeetingRoomHistory,meetRoomHistory);
+    }catch(err:any){
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message);
+    }
   }
 }
 

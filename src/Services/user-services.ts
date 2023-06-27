@@ -24,7 +24,9 @@ export class UserServices {
   public static async getAllUsers() {
     try {
       const users = await User.find();
-
+      if(users.length == 0){
+        throw { status: 404, message:"No users found"}
+      }
       return users;
     } catch (err: any) {
       throw err;
@@ -35,7 +37,7 @@ export class UserServices {
     try {
       const user: User | null = await User.findOne({ where: { email: email } });
       if (user) {
-        throw new Error("User Already Exists");
+        throw {status: 409, message:"User Already Exists"}
       }
       return false;
     } catch (err: any) {

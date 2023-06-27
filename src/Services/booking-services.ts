@@ -10,8 +10,8 @@ export class BookingServices {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
-      console.log("In bookMeetRoom");
-      console.log(meetRoomId, date, startTime, endTime);
+      // console.log("In bookMeetRoom");
+      // console.log(meetRoomId, date, startTime, endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -73,6 +73,10 @@ export class BookingServices {
     try {
       let myBookings = await Booking.findBy({ user_id: userId });
 
+      if(myBookings.length == 0){
+        throw { status: 404, message:"No history found"}
+      }
+
       const bookingData = myBookings.map((booking) => {
         return BookingResponseObj.convertBookingToObj(booking);
       });
@@ -92,6 +96,9 @@ export class BookingServices {
     try {
       let booking: any = await Booking.findOneBy({ id: bookingId });
       // console.log(booking);
+      if(!booking){
+        throw {status: 404, message:"Booking with this ID not found"}
+      }
       const data = BookingResponseObj.convertBookingToObj(booking);
       // const data = Booking.BookingRoomObj(booking);
       const editedBookingData = {
@@ -126,7 +133,7 @@ export class BookingServices {
 
         return BookingResponseObj.convertBookingToObj(bookingData);
       }
-      throw new Error("Booking with this ID not found");
+      throw {status: 404, message:"Booking with this ID not found"}
     } catch (err: any) {
       throw err;
     }
@@ -138,7 +145,7 @@ export class BookingServices {
         id: MeetRoomId,
       });
       if (!result) {
-        throw new Error("Meeting Room Does not Exists");
+        throw {status: 404, message :"Meeting Room Does not Exists"}
       }
       return true;
     } catch (err: any) {
@@ -178,7 +185,7 @@ export class BookingServices {
       if (clash_time.length == 0) {
         return true;
       }
-      throw new Error("Room is Booked at this time slot");
+      throw {status: 400, message: 'Meeting Room is already occupied'};
     } catch (err: any) {
       throw err;
     }

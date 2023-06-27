@@ -5,11 +5,13 @@ import { UserController } from "../controller/user-controller";
 import { BookingController } from "../controller/book-controller";
 import { AuthenticateMiddleware } from "../Middleware/Authentication";
 import { AccessValidation } from "../Validator/access-validation";
+import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 
 export class BookRoute {
   public static routes(router: Router) {
     router.post(
       BookingApiRoute.BookMeetRoom,
+      BookMeetRoomValidations.bookMeetRoom,
       AuthenticateMiddleware.AuthenticateUser,
       BookingController.addBooking
     );

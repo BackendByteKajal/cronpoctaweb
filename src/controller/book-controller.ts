@@ -13,7 +13,8 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
-      ctx.body = Utils.errorResponse(400, err.message);
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status, err.message);
     }
   }
 
@@ -25,12 +26,13 @@ export class BookingController {
         allBookings.todays_bookings.length == 0 &&
         allBookings.upcoming_bookings.length == 0
       ) {
-        throw new Error("No Bookings Found");
+        throw { status:400, message:'No meetings found'}
       }
 
       ctx.body = Utils.successResponse(Message.ActiveBookings, allBookings);
     } catch (err: any) {
-      ctx.body = Utils.errorResponse(400, err.message);
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status, err.message);
     }
   }
 
@@ -39,12 +41,13 @@ export class BookingController {
       const data = ctx.request.body as BookingRoomDto;
 
       const { userId } = data;
-      console.log(userId);
+      // console.log(userId);
       const bookingData = await BookingServices.getBookingHistory(userId);
 
       ctx.body = Utils.successResponse(Message.BookingHistory, bookingData);
     } catch (err: any) {
-      ctx.body = Utils.errorResponse(400, err.message);
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status, err.message);
     }
   }
 
@@ -59,7 +62,8 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
-      ctx.body = Utils.errorResponse(400, err.message);
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status, err.message);
     }
   }
 
@@ -75,7 +79,8 @@ export class BookingController {
         deletedDataResponse
       );
     } catch (err: any) {
-      ctx.body = Utils.errorResponse(400, err.message);
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status, err.message);
     }
   }
 }
