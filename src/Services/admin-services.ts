@@ -23,7 +23,7 @@ export class AdminServices {
         if(meetRooms){
           return meetRooms;
         }
-        throw new Error("No results Found");
+        throw { status: 404, message: "No results Found"}
     }catch(err:any){
         throw err;
     }
@@ -33,7 +33,7 @@ export class AdminServices {
     try{
       const meetRoom:any = await MeetingRoom.findOneBy({id:meetRoomId});
       if(!meetRoom){
-        throw new Error("Meeting Room Does not Exists");
+        throw { status: 404, message: "Meeting Room Does not Exists"}
       }
       const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
       const editedMeetingData = {
@@ -54,7 +54,7 @@ export class AdminServices {
       const meetRoomHistory = await Booking.findBy({ meetroom_id:meetRoomId});
 
       if(meetRoomHistory.length==0){
-        throw new Error("No History Found")
+        throw { status: 404, message: "No history found"}
       }
       const historyDetails = meetRoomHistory.map((data)=>{
         return BookingResponseObj.convertBookingToObj(data);

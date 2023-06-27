@@ -22,7 +22,7 @@ export class AuthServices {
           token
         }
       } else {
-        throw new Error("Please check credentials")
+        throw {status: 400, message:"Please check credentials"}
       }
     } catch (err: any) {
       throw err;
@@ -41,7 +41,7 @@ export class AuthServices {
           token
         }
       } else {
-        throw new Error("Please check credentials")
+        throw {status: 400, message:"Please check credentials"}
       }
     } catch (err: any) {
       throw err;
@@ -54,7 +54,7 @@ export class AuthServices {
         where: { email: email },
       });
       if (!user) {
-        throw new Error("User Does not Exists");
+        throw {status: 404, message:"User Does not Exists"}
       }
       return user;
     } catch (err: any) {
@@ -68,7 +68,7 @@ export class AuthServices {
         where: { email: email },
       });
       if (!user) {
-        throw Error("Admin Does not Exists");
+        throw {status: 404, message:"Admin Does not Exists"}
       }
       return user;
     } catch (err: any) {

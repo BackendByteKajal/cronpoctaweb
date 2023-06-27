@@ -20,8 +20,8 @@ export class UserController {
       ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     }catch(err:any){
-      ctx.status = 409;
-      ctx.body = Utils.errorResponse(409,err.message)
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message)
     }
   }
 
@@ -34,7 +34,8 @@ export class UserController {
       ctx.body = Utils.successResponse(Message.AllUsers, allUsers);
 
     }catch(err:any){
-      throw err;
+      ctx.status = err.status;
+      ctx.body = Utils.errorResponse(err.status,err.message)
     }
   }
 }
