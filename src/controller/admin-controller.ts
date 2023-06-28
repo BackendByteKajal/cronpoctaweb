@@ -14,8 +14,9 @@ export class AdminController {
         ctx.body = Utils.successResponse(Message.MeetRoomAdded,result);
 
     } catch (err: any) {
-      ctx.status = 400;
-      ctx.body = Utils.errorResponse(400,err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -29,8 +30,9 @@ export class AdminController {
 
             ctx.body = Utils.successResponse(Message.AllMeetingRooms,response);
         }catch(err:any){
-            ctx.status = err.status;
-            ctx.body = Utils.errorResponse(err.status,err.message);
+          const status = err.status || 400;
+          ctx.status = status;
+          ctx.body = Utils.errorResponse(status,err.message)
         }
   }
 
@@ -42,8 +44,9 @@ export class AdminController {
 
       ctx.body = Utils.successResponse("Meeting Data Updated",result);
     }catch(err:any){
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status,err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -54,8 +57,9 @@ export class AdminController {
 
       ctx.body = Utils.successResponse(Message.MeetingRoomHistory,meetRoomHistory);
     }catch(err:any){
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status,err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 }

@@ -13,8 +13,9 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -31,8 +32,9 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.ActiveBookings, allBookings);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -46,8 +48,9 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.BookingHistory, bookingData);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -62,8 +65,9 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -79,8 +83,9 @@ export class BookingController {
         deletedDataResponse
       );
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 }
