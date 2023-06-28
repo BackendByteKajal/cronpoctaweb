@@ -13,12 +13,12 @@ export class BookMeetRoomValidations {
         body: Joi.object({
           userId: Joi.required(),
           meetRoomId: Joi.required(),
-          title: Joi.string().required().trim().min(1).max(100),
+          title: Joi.string().pattern(/^(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]*$/).trim().required().min(1).max(100),
           date: Joi.date().format("DD/MM/YYYY").required(),
           startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
           endTime: Joi.string().pattern(/^^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
-          guests: Joi.string(),
-          description:Joi.string()
+          guests: Joi.string().empty(""),
+          description:Joi.string().empty("")
         }),
       };
       const meetRoomDetails: any = ctx.request.body;

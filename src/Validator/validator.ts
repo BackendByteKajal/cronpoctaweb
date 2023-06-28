@@ -28,7 +28,8 @@ export class UserValidator {
                     .max(8),
           email: Joi
                  .string()
-                 .pattern(/^[a-zA-Z]+[0-9]*@.*$/)
+                //  .pattern(/^[a-zA-Z]+[0-9]*@.*$/)
+                 .pattern(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/) 
                  .required()
                  .email(),
           password: Joi

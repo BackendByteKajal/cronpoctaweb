@@ -5,6 +5,7 @@ import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 import { UserObject } from "../dtos/response/user-object-dto";
 import { Admin } from "../entities/admin-entity";
+import { NodeCaching } from "../Middleware/Node-cache";
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -16,7 +17,8 @@ export class AuthServices {
       const userData = UserObject.convertToObj(user);
       const result = await bcrypt.compare(password,user.password)
       if (result) {
-        const token = this.createToken(user);
+        const token = this.createToken(userData);
+        // NodeCaching.set(token,userData,)
         return {
           userDetails:userData,
           token
@@ -77,15 +79,17 @@ export class AuthServices {
   }
   
   public static createToken(data: any) {
+    console.log("data:",data);
     const { email, password } = data;
     const key = configData.jwt.key;
 
     // console.log(key);
     const token = jwt.sign(
-      {
-        email,
-        password,
-      },
+      // {
+      //   email,
+      //   password,
+      // },
+      data,
       key
     );
     return token;

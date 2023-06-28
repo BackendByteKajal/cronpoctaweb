@@ -6,6 +6,8 @@ export const AuthApiRoutes = {
 export const UserApiRoutes = {
   Register:"/register",
   Users:"/users",
+  UserVerification:"/user/:id/verify"
+  // UserVerification:"/home"
 }
 
 export const AdminApiRoutes = {

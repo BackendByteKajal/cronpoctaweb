@@ -5,4 +5,5 @@ export class RegisterUserDto {
   employeeId: string;
   email: string;
   password: string;
+  isVerified: boolean
 }

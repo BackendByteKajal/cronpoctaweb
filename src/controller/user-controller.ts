@@ -40,4 +40,17 @@ export class UserController {
       ctx.body = Utils.errorResponse(status,err.message)
     }
   }
+
+  public static async userVerification(ctx:Context){
+    try{
+      const param = ctx.params.id;
+      console.log(param);
+      await UserServices.verifyUser(param);
+      ctx.body = Utils.successResponse(Message.UserVerified,{});
+    }catch(err:any){
+      const status = err.status || 400;
+      ctx.status = status
+      ctx.body = Utils.errorResponse(status,err.message)
+    }
+  }
 }
