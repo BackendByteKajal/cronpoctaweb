@@ -8,6 +8,7 @@ export class AuthController {
   public static async login(ctx: Context) {
     try{
       const body = ctx.request.body as LoginUserDto;
+      console.log(body);
       const data: any = await AuthServices.loginUser(body.email, body.password);
   
       ctx.body = Utils.successResponse(Message.LoginSuccess,data);

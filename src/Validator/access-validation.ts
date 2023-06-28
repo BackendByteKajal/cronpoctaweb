@@ -11,6 +11,9 @@ export class AccessValidation {
       const bookingId = ctx.params.id;
       const loggedUserId: any = ctx.request.body;
       const booking: any = await Booking.findOneBy({ id: bookingId });
+      if(!booking){
+        throw new Error("Booking with this ID not found")
+      }
       const data = BookingResponseObj.convertBookingToObj(booking);
       if (data.userId == loggedUserId.userId) {
         const current_time = AccessValidation.getCurrentTime();
@@ -20,7 +23,21 @@ export class AccessValidation {
           booking.start_time
         );
         const result = BookMeetRoomValidations.dateValidation(booking.date);
+        if(loggedUserId.date){
+         const checkDate = BookMeetRoomValidations.dateValidation(loggedUserId.date);
+         if(checkDate == -1){
+          throw new Error("Please enter valid date");
+         }
+         const checkTiming = AccessValidation.editDeletePossibility(
+          current_time,
+          loggedUserId.startTime
+        );
+        if(checkTiming == false && checkDate != 1 ){
+          throw new Error("Please enter valid time");
+        }
 
+         
+        }
         if (result == -1) {
           throw new Error("Cannot Edit or Delete booking now");
         } else if (compareTiming == false && result != 1) {

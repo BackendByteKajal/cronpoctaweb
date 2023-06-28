@@ -96,9 +96,9 @@ export class BookingServices {
     try {
       let booking: any = await Booking.findOneBy({ id: bookingId });
       // console.log(booking);
-      if(!booking){
-        throw {status: 404, message:"Booking with this ID not found"}
-      }
+      // if(!booking){
+      //   throw {status: 404, message:"Booking with this ID not found"}
+      // }
       const data = BookingResponseObj.convertBookingToObj(booking);
       // const data = Booking.BookingRoomObj(booking);
       const editedBookingData = {
