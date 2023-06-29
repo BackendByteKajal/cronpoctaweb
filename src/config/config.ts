@@ -12,6 +12,10 @@ export const configData = {
     entities: [...["src/entities/**/*-entity.ts"]],
     schema: process.env.PG_SCHEMA,
   },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port:process.env.REDIS_PORT
+  },
   jwt: {
     key: process.env.JWT_KEY
   }
