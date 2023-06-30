@@ -4,6 +4,7 @@ import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
 import { User } from "../entities/user-entity";
+import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 const moment = require("moment");
 
 export class BookingServices {
@@ -39,9 +40,10 @@ export class BookingServices {
       const current_date = moment().format("DD/MM/YYYY");
       // console.log(current_date);
       bookings.forEach((booking) => {
-        if (booking.date == current_date) {
+        const compareDate = BookMeetRoomValidations.dateValidation(booking.date);
+        if (compareDate == 0) {
           todays_bookings.push(booking);
-        } else if (booking.date > current_date) {
+        } else if (compareDate == 1) {
           upcoming_bookings.push(booking);
         }
       });
@@ -84,7 +86,7 @@ export class BookingServices {
       // console.log(bookingData)
       const allBookings = await this.addExtraDetails(bookingData);
       const allBookingsHistory = this.addDuration(allBookings);
-      return allBookingsHistory;
+      return allBookingsHistory.slice().reverse();
     } catch (err: any) {
       throw err;
     }

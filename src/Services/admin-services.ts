@@ -59,7 +59,8 @@ export class AdminServices {
       const historyDetails = meetRoomHistory.map((data)=>{
         return BookingResponseObj.convertBookingToObj(data);
       })
-      const meetRoomData = BookingServices.addDuration(historyDetails);
+      const meetRoomDetail = await BookingServices.addExtraDetails(historyDetails);
+      const  meetRoomData = BookingServices.addDuration(meetRoomDetail);
       return meetRoomData;
     }catch(err:any){
       throw err;
