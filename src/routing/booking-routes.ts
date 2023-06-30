@@ -20,7 +20,7 @@ export class BookRoute {
       AuthenticateMiddleware.AuthenticateUser,
       BookingController.activeBookings
     );
-    router.post(
+    router.get(
       BookingApiRoute.MyBookings,
       AuthenticateMiddleware.AuthenticateUser,
       BookingController.bookingHistory

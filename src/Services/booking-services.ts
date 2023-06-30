@@ -1,3 +1,4 @@
+import { Context } from "koa";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
@@ -6,12 +7,10 @@ import { User } from "../entities/user-entity";
 const moment = require("moment");
 
 export class BookingServices {
-  public static async bookMeetRoom(bookingDetails: BookingRoomDto) {
+  public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
-      // console.log("In bookMeetRoom");
-      // console.log(meetRoomId, date, startTime, endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -20,7 +19,9 @@ export class BookingServices {
         endTime
       );
       if (result) {
-        const data = Booking.BookingRoomObj(bookingDetails);
+        const bookRoomData = {...bookingDetails,userId:ctx.state.me.id}
+        const data = Booking.BookingRoomObj(bookRoomData);
+        
         const response = await Booking.create(data).save();
         const responseObj = BookingResponseObj.convertBookingToObj(response);
         return responseObj;
@@ -30,13 +31,13 @@ export class BookingServices {
     }
   }
 
-  public static async getAllBookings() {
+  public static async getAllBookings(ctx:Context) {
     try {
       let todays_bookings: Booking[] = [];
       let upcoming_bookings: Booking[] = [];
       const bookings = await Booking.find();
       const current_date = moment().format("DD/MM/YYYY");
-      console.log(current_date);
+      // console.log(current_date);
       bookings.forEach((booking) => {
         if (booking.date == current_date) {
           todays_bookings.push(booking);
@@ -207,7 +208,7 @@ export class BookingServices {
         return newObj;
       })
     );
-    console.log(updatedArray);
+    // console.log(updatedArray);
     return updatedArray;
   }
 

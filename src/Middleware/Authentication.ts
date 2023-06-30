@@ -29,6 +29,7 @@ export class AuthenticateMiddleware {
         const decode = jwt.verify(token, configData.jwt.key);
   
         ctx.state.me = JSON.parse(cachedData);
+        console.log("ctx.state.me",ctx.state.me);
     }
 
       await next();

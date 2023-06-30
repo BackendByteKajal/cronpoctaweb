@@ -9,7 +9,7 @@ export class BookingController {
   public static async addBooking(ctx: Context) {
     try {
       const roomDetails = ctx.request.body as BookingRoomDto;
-      const response = await BookingServices.bookMeetRoom(roomDetails);
+      const response = await BookingServices.bookMeetRoom(roomDetails,ctx);
 
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
@@ -21,7 +21,7 @@ export class BookingController {
 
   public static async activeBookings(ctx: Context) {
     try {
-      const allBookings = await BookingServices.getAllBookings();
+      const allBookings = await BookingServices.getAllBookings(ctx);
 
       if (
         allBookings.todays_bookings.length == 0 &&
@@ -40,10 +40,11 @@ export class BookingController {
 
   public static async bookingHistory(ctx: Context) {
     try {
-      const data = ctx.request.body as BookingRoomDto;
+      // const data = ctx.request.body as BookingRoomDto;
 
-      const { userId } = data;
+      // const { userId } = data;
       // console.log(userId);
+      const userId = ctx.state.me.id;
       const bookingData = await BookingServices.getBookingHistory(userId);
 
       ctx.body = Utils.successResponse(Message.BookingHistory, bookingData);

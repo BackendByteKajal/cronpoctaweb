@@ -11,7 +11,7 @@ export class BookMeetRoomValidations {
     try {
       const createJSON = {
         body: Joi.object({
-          userId: Joi.required(),
+          // userId: Joi.required(),
           meetRoomId: Joi.required(),
           title: Joi.string().pattern(/^(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]*$/).trim().required().min(1).max(100),
           date: Joi.date().format("DD/MM/YYYY").required(),

@@ -9,13 +9,14 @@ export class AccessValidation {
   public static async editDeleteValidation(ctx: Context, next: Next) {
     try {
       const bookingId = ctx.params.id;
-      const loggedUserId: any = ctx.request.body;
+      const loggedUserData: any = ctx.request.body;
+      const loggedUserId = ctx.state.me.id;
       const booking: any = await Booking.findOneBy({ id: bookingId });
       if(!booking){
         throw new Error("Booking with this ID not found")
       }
       const data = BookingResponseObj.convertBookingToObj(booking);
-      if (data.userId == loggedUserId.userId) {
+      if (data.userId == loggedUserId) {
         const current_time = AccessValidation.getCurrentTime();
 
         const compareTiming = AccessValidation.editDeletePossibility(
@@ -23,14 +24,14 @@ export class AccessValidation {
           booking.start_time
         );
         const result = BookMeetRoomValidations.dateValidation(booking.date);
-        if(loggedUserId.date){
-         const checkDate = BookMeetRoomValidations.dateValidation(loggedUserId.date);
+        if(loggedUserData.date){
+         const checkDate = BookMeetRoomValidations.dateValidation(loggedUserData.date);
          if(checkDate == -1){
           throw new Error("Please enter valid date");
          }
          const checkTiming = AccessValidation.editDeletePossibility(
           current_time,
-          loggedUserId.startTime
+          loggedUserData.startTime
         );
         if(checkTiming == false && checkDate != 1 ){
           throw new Error("Please enter valid time");

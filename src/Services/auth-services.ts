@@ -93,7 +93,7 @@ export class AuthServices {
 
     // console.log(key);
     const token = jwt.sign(
-      data,
+      {id:data.id},
       key,
       {expiresIn: 1000}
     );
