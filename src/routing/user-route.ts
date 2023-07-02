@@ -9,6 +9,7 @@ export class UserRoute {
 
     router.post(UserApiRoutes.Register,UserValidator.Register,UserController.userRegister);
     router.get(UserApiRoutes.Users,UserController.Users);
+    router.patch(UserApiRoutes.UserVerification,UserController.userVerification)
     
   }
 }

@@ -1,17 +1,17 @@
+import { Context } from "koa";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
 import { User } from "../entities/user-entity";
+import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 const moment = require("moment");
 
 export class BookingServices {
-  public static async bookMeetRoom(bookingDetails: BookingRoomDto) {
+  public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
-      // console.log("In bookMeetRoom");
-      // console.log(meetRoomId, date, startTime, endTime);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -20,7 +20,9 @@ export class BookingServices {
         endTime
       );
       if (result) {
-        const data = Booking.BookingRoomObj(bookingDetails);
+        const bookRoomData = {...bookingDetails,userId:ctx.state.me.id}
+        const data = Booking.BookingRoomObj(bookRoomData);
+        
         const response = await Booking.create(data).save();
         const responseObj = BookingResponseObj.convertBookingToObj(response);
         return responseObj;
@@ -30,17 +32,18 @@ export class BookingServices {
     }
   }
 
-  public static async getAllBookings() {
+  public static async getAllBookings(ctx:Context) {
     try {
       let todays_bookings: Booking[] = [];
       let upcoming_bookings: Booking[] = [];
       const bookings = await Booking.find();
       const current_date = moment().format("DD/MM/YYYY");
-      console.log(current_date);
+      // console.log(current_date);
       bookings.forEach((booking) => {
-        if (booking.date == current_date) {
+        const compareDate = BookMeetRoomValidations.dateValidation(booking.date);
+        if (compareDate == 0) {
           todays_bookings.push(booking);
-        } else if (booking.date > current_date) {
+        } else if (compareDate == 1) {
           upcoming_bookings.push(booking);
         }
       });
@@ -83,7 +86,7 @@ export class BookingServices {
       // console.log(bookingData)
       const allBookings = await this.addExtraDetails(bookingData);
       const allBookingsHistory = this.addDuration(allBookings);
-      return allBookingsHistory;
+      return allBookingsHistory.slice().reverse();
     } catch (err: any) {
       throw err;
     }
@@ -96,9 +99,9 @@ export class BookingServices {
     try {
       let booking: any = await Booking.findOneBy({ id: bookingId });
       // console.log(booking);
-      if(!booking){
-        throw {status: 404, message:"Booking with this ID not found"}
-      }
+      // if(!booking){
+      //   throw {status: 404, message:"Booking with this ID not found"}
+      // }
       const data = BookingResponseObj.convertBookingToObj(booking);
       // const data = Booking.BookingRoomObj(booking);
       const editedBookingData = {
@@ -207,7 +210,7 @@ export class BookingServices {
         return newObj;
       })
     );
-    console.log(updatedArray);
+    // console.log(updatedArray);
     return updatedArray;
   }
 

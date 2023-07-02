@@ -20,8 +20,9 @@ export class UserController {
       ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     }catch(err:any){
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status,err.message)
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -34,8 +35,22 @@ export class UserController {
       ctx.body = Utils.successResponse(Message.AllUsers, allUsers);
 
     }catch(err:any){
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status,err.message)
+      const status = err.status || 400;
+      ctx.status = status
+      ctx.body = Utils.errorResponse(status,err.message)
+    }
+  }
+
+  public static async userVerification(ctx:Context){
+    try{
+      const param = ctx.params.id;
+      console.log(param);
+      await UserServices.verifyUser(param);
+      ctx.body = Utils.successResponse(Message.UserVerified,{});
+    }catch(err:any){
+      const status = err.status || 400;
+      ctx.status = status
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 }

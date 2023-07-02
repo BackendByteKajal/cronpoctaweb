@@ -5,6 +5,9 @@ import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 import { UserObject } from "../dtos/response/user-object-dto";
 import { Admin } from "../entities/admin-entity";
+import { NodeCaching } from "../Middleware/Node-cache";
+import { RedisCache } from "../connection/redis-connection";
+import { RedisSessionExpires } from "../enum/redis-expire-session";
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -13,10 +16,17 @@ export class AuthServices {
   public static async loginUser(email: string, password: string) {
     try {
       const user: any = await this.isUserExists(email);
+      // console.log("user Data",user);
       const userData = UserObject.convertToObj(user);
+      if(userData.isVerified == false){
+        throw { status:400, message:"User not verified. Please Verify to log in"}
+      }
       const result = await bcrypt.compare(password,user.password)
       if (result) {
-        const token = this.createToken(user);
+        const token = this.createToken(userData);
+
+        this.redisCaching(userData, token);
+        // NodeCaching.set(token,userData,)
         return {
           userDetails:userData,
           token
@@ -35,7 +45,7 @@ export class AuthServices {
       const adminData = UserObject.convertToObj(admin);
       // const result = await bcrypt.compare(password,admin.password)
       if (admin.password == password) {
-        const token = this.createToken(admin);
+        const token = this.createToken(adminData);
         return {
           adminDetails:adminData,
           token
@@ -77,18 +87,22 @@ export class AuthServices {
   }
   
   public static createToken(data: any) {
-    const { email, password } = data;
+    // console.log("data:",data);
+    // const { email, password } = data;
     const key = configData.jwt.key;
 
     // console.log(key);
     const token = jwt.sign(
-      {
-        email,
-        password,
-      },
-      key
+      {id:data.id},
+      key,
+      // {expiresIn: 1000}
     );
     return token;
+  }
+
+  public static redisCaching(userData: UserObject, token: string) {
+    const redisObj = RedisCache.connect();
+    redisObj.set(token, JSON.stringify(userData), RedisSessionExpires.UserLogin);
   }
 
   public static async SendEmail() {

@@ -81,6 +81,22 @@ export class Booking extends BaseEntity{
     this._status = status;
   }
 
+  @Column({nullable:true})
+  public get guests(): string {
+    return this._guests;
+  }
+  public set guests(guests: string) {
+    this._guests = guests;
+  }
+
+  @Column({nullable:true})
+  public get description(): string {
+    return this._description;
+  }
+  public set description(description: string) {
+    this._description = description;
+  }
+
   @CreateDateColumn()
   created_at: Date; // Creation date
 
@@ -99,6 +115,8 @@ export class Booking extends BaseEntity{
       .start_time(bookingObj.startTime)
       .end_time(bookingObj.endTime)
       .status(bookingObj.status)
+      .guests(bookingObj.guests)
+      .description(bookingObj.description)
       .build();
 
     return obj;

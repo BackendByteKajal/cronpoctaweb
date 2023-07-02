@@ -16,6 +16,8 @@ export class BookingResponseObj extends BookingRoomDto{
           .startTime(bookingObj.start_time)
           .endTime(bookingObj.end_time)
           .status(bookingObj.status)
+          .guests(bookingObj.guests)
+          .description(bookingObj.description)
           
           return resp.build();
       }

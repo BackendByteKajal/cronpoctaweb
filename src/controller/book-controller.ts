@@ -9,18 +9,19 @@ export class BookingController {
   public static async addBooking(ctx: Context) {
     try {
       const roomDetails = ctx.request.body as BookingRoomDto;
-      const response = await BookingServices.bookMeetRoom(roomDetails);
+      const response = await BookingServices.bookMeetRoom(roomDetails,ctx);
 
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
   public static async activeBookings(ctx: Context) {
     try {
-      const allBookings = await BookingServices.getAllBookings();
+      const allBookings = await BookingServices.getAllBookings(ctx);
 
       if (
         allBookings.todays_bookings.length == 0 &&
@@ -31,23 +32,26 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.ActiveBookings, allBookings);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
   public static async bookingHistory(ctx: Context) {
     try {
-      const data = ctx.request.body as BookingRoomDto;
+      // const data = ctx.request.body as BookingRoomDto;
 
-      const { userId } = data;
+      // const { userId } = data;
       // console.log(userId);
+      const userId = ctx.state.me.id;
       const bookingData = await BookingServices.getBookingHistory(userId);
 
       ctx.body = Utils.successResponse(Message.BookingHistory, bookingData);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -62,8 +66,9 @@ export class BookingController {
 
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 
@@ -79,8 +84,9 @@ export class BookingController {
         deletedDataResponse
       );
     } catch (err: any) {
-      ctx.status = err.status;
-      ctx.body = Utils.errorResponse(err.status, err.message);
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status,err.message)
     }
   }
 }

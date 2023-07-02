@@ -11,5 +11,6 @@ export const Message = {
     BookingHistory:"All my Booking History is here...",
     EditedBooking: "Your Booking updated Successfully",
     DeletedBooking:"Your Booking deleted Successfully",
-    MeetingRoomHistory:"Meeting Room History is here"
+    MeetingRoomHistory:"Meeting Room History is here",
+    UserVerified:"User Verified Successfully"
 }

@@ -11,12 +11,15 @@ export class BookMeetRoomValidations {
     try {
       const createJSON = {
         body: Joi.object({
-          userId: Joi.required(),
+          // userId: Joi.required(),
           meetRoomId: Joi.required(),
-          title: Joi.string().required().trim().min(1).max(100),
+          title: Joi.string().pattern(/^(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]([\w ]+)*$/).required().min(1).max(100),
+          //^[a-zA-Z]+(?:[ \t]+[a-zA-Z]+)*[0-9!@#$%^&*()\-_=+[\]{}\\|;:'",.<>/?]*$/
           date: Joi.date().format("DD/MM/YYYY").required(),
           startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
           endTime: Joi.string().pattern(/^^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+          guests: Joi.string().empty(""),
+          description:Joi.string().empty("")
         }),
       };
       const meetRoomDetails: any = ctx.request.body;

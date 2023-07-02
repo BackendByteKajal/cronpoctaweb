@@ -6,4 +6,6 @@ export class BookingRoomDto {
     startTime: string;
     endTime: string;
     status: string;
+    guests: string;
+    description:string;
   }

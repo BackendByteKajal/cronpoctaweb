@@ -11,6 +11,7 @@ export class User extends BaseEntity{
   private _employee_id: string;
   private _email: string;
   private _password: string;
+  private _is_verified: boolean;
   
 
   @PrimaryGeneratedColumn()
@@ -52,12 +53,21 @@ export class User extends BaseEntity{
   public set email(email: string) {
     this._email = email;
   }
+
   @Column({nullable:true})
   public get password(): string {
     return this._password;
   }
   public set password(password: string) {
     this._password = password;
+  }
+
+  @Column({nullable:true,default:false})
+  public get is_verified(): boolean {
+    return this._is_verified;
+  }
+  public set is_verified(is_verified: boolean) {
+    this._is_verified = is_verified;
   }
 
   @CreateDateColumn()
@@ -76,6 +86,7 @@ export class User extends BaseEntity{
       .last_name(registerObj.lastName)
       .employee_id(registerObj.employeeId)
       .password(hash_password)
+      .is_verified(registerObj.isVerified)
       .build();
 
     return obj;
