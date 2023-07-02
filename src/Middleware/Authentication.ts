@@ -3,7 +3,7 @@ import { configData } from "../config/config";
 import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 import { RedisCache } from "../connection/redis-connection";
-import { RedisSessionExpires } from "../enum/redis-session-expire";
+import { RedisSessionExpires } from "../enum/redis-expire-session";
 
 const jwt = require("jsonwebtoken");
 

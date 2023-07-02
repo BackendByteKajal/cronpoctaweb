@@ -7,7 +7,7 @@ import { UserObject } from "../dtos/response/user-object-dto";
 import { Admin } from "../entities/admin-entity";
 import { NodeCaching } from "../Middleware/Node-cache";
 import { RedisCache } from "../connection/redis-connection";
-import { RedisSessionExpires } from "../enum/redis-session-expire";
+import { RedisSessionExpires } from "../enum/redis-expire-session";
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -95,7 +95,7 @@ export class AuthServices {
     const token = jwt.sign(
       {id:data.id},
       key,
-      {expiresIn: 1000}
+      // {expiresIn: 1000}
     );
     return token;
   }
