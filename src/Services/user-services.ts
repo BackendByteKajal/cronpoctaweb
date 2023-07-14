@@ -36,6 +36,22 @@ export class UserServices {
     }
   }
 
+  public static async getAllGuests() {
+    try {
+      const users = await User.find();
+      if(users.length == 0){
+        throw { status: 404, message:"No users found"}
+      }
+      return users;
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+
+
+
+
   public static async isUserExists(email: string): Promise<boolean> {
     try {
       const user: User | null = await User.findOne({ where: { email: email } });

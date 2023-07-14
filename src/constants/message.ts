@@ -1,6 +1,7 @@
 export const Message = {
     SuccessRegister:"User Registered Successfully",
     AllUsers:"All Users",
+    AllGuests:"All Guests",
     LoginSuccess:"Login Successfull",
     LoginFailed:"Login Failed",
     AuthenticationFailed:"Not Authenticated",
@@ -11,6 +12,9 @@ export const Message = {
     BookingHistory:"All my Booking History is here...",
     EditedBooking: "Your Booking updated Successfully",
     DeletedBooking:"Your Booking deleted Successfully",
+    FetchBooking:"Your Booking fetch Successfully",
     MeetingRoomHistory:"Meeting Room History is here",
-    UserVerified:"User Verified Successfully"
+    UserVerified:"User Verified Successfully",
+    RoomNotCreate:"Room not created"
+    
 }

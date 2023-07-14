@@ -4,3 +4,8 @@ export class MeetRoomDto {
     imageUrl: string;
     status: string;
   }
+  export class MeetRoomDtobody{
+    meetRoomName: string;
+    capacity: number;
+  
+  }

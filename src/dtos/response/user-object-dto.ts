@@ -7,7 +7,8 @@ export class UserObject {
   email: string;
   lastName:string;
   employeeId:string;
-  isVerified:boolean
+  isVerified:boolean;
+  guestName:string;
 
   public static convertToObj(userObj: User): UserObject {
     const resp = Builder<UserObject>()
@@ -17,8 +18,16 @@ export class UserObject {
       .lastName(userObj.last_name)
       .employeeId(userObj.employee_id)
       .isVerified(userObj.is_verified)
+      
 
 
       return resp.build();
   }
+  public static convertToObj1(userObj: User): UserObject {
+    const resp = Builder<UserObject>()
+                  .guestName(`${userObj.user_name} ${userObj.last_name}`)
+               
+                  return resp.build();
+  }
 }
+//`${firstName} ${lastName}`

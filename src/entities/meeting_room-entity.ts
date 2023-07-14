@@ -62,6 +62,16 @@ export class MeetingRoom extends BaseEntity{
   @DeleteDateColumn()
   deleted_at: Date; // Deletion date
 
+  /*public static fromAdminMeetRoom(MeetRoomObj: MeetRoomDto): MeetingRoom {
+    const obj = Builder<MeetingRoom>()
+      .room_name(MeetRoomObj.meetRoomName)
+      .capacity(MeetRoomObj.capacity)
+      .image_url(MeetRoomObj.imageUrl)
+      .status(MeetRoomObj.status) 
+      .build();
+
+    return obj;
+  }*/
   public static fromAdminMeetRoom(MeetRoomObj: MeetRoomDto): MeetingRoom {
     const obj = Builder<MeetingRoom>()
       .room_name(MeetRoomObj.meetRoomName)

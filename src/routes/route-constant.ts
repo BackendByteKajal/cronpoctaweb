@@ -6,8 +6,10 @@ export const AuthApiRoutes = {
 export const UserApiRoutes = {
   Register:"/register",
   Users:"/users",
-  UserVerification:"/user/:id/verify"
-  // UserVerification:"/home"
+  UserVerification:"/user/:id/verify",
+  GetAllGuests:"/getallguests",
+  UserVerified:"/userverified/:id"
+   //UserVerification:"/home"
 }
 
 export const AdminApiRoutes = {
@@ -26,8 +28,9 @@ export const BookingApiRoute = {
   BookMeetRoom: "/bookroom",
   Bookings:"/bookings",
   MyBookings:"/mybookings",
-  EditBooking:"/bookings/:id",
-  DeleteBooking:"/bookings/:id"
+  EditBooking:"/editbookings/:id",
+  DeleteBooking:"/deletebookings/:id",
+  FETCHBOOKINGWITHID:"/fetchBookingWithId/:id"
 }
 
 export const RouteVersion = {

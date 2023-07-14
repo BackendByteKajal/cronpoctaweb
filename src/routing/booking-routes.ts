@@ -9,12 +9,17 @@ import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 
 export class BookRoute {
   public static routes(router: Router) {
-    router.post(
+  router.post(
       BookingApiRoute.BookMeetRoom,
-      BookMeetRoomValidations.bookMeetRoom,
       AuthenticateMiddleware.AuthenticateUser,
+      BookMeetRoomValidations.bookMeetRoom,
       BookingController.addBooking
     );
+    /*router.post(
+      BookingApiRoute.BookMeetRoom,
+      BookMeetRoomValidations.bookMeetRoom,
+      BookingController.addBooking
+    );*/
     router.get(
       BookingApiRoute.Bookings,
       AuthenticateMiddleware.AuthenticateUser,
@@ -25,16 +30,29 @@ export class BookRoute {
       AuthenticateMiddleware.AuthenticateUser,
       BookingController.bookingHistory
     );
-    router.patch(
+    /*router.patch(
       BookingApiRoute.EditBooking,
       AuthenticateMiddleware.AuthenticateUser,
       AccessValidation.editDeleteValidation,
       BookingController.editBooking
+    );*/
+    router.patch(
+      BookingApiRoute.EditBooking,
+      BookingController.editBooking
     );
-    router.delete(
+    router.get(
+      BookingApiRoute.FETCHBOOKINGWITHID,
+      BookingController.fetchBookingWithId
+    );
+    /*router.delete(
       BookingApiRoute.DeleteBooking,
       AuthenticateMiddleware.AuthenticateUser,
       AccessValidation.editDeleteValidation,
+      BookingController.deleteBooking
+    );*/
+    router.delete(
+      BookingApiRoute.DeleteBooking,
+      //AuthenticateMiddleware.AuthenticateUser,
       BookingController.deleteBooking
     );
   }

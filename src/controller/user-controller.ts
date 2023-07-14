@@ -40,6 +40,21 @@ export class UserController {
       ctx.body = Utils.errorResponse(status,err.message)
     }
   }
+  public static async getAllGuests(ctx: Context) {
+    try{
+      const users = await UserServices.getAllGuests();
+      const allUsers = users.map((ele) => {
+        return UserObject.convertToObj1(ele);
+      });
+      
+      ctx.body = Utils.successResponse(Message.AllGuests, allUsers);
+
+    }catch(err:any){
+      const status = err.status || 400;
+      ctx.status = status
+      ctx.body = Utils.errorResponse(status,err.message)
+    }
+  }
 
   public static async userVerification(ctx:Context){
     try{

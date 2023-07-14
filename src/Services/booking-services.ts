@@ -8,7 +8,7 @@ import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 const moment = require("moment");
 
 export class BookingServices {
-  public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
+  /*public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
     try {
       const { userId, meetRoomId, title, date, startTime, endTime, status } =
         bookingDetails;
@@ -23,6 +23,34 @@ export class BookingServices {
         const bookRoomData = {...bookingDetails,userId:ctx.state.me.id}
         const data = Booking.BookingRoomObj(bookRoomData);
         
+        const response = await Booking.create(data).save();
+        const responseObj = BookingResponseObj.convertBookingToObj(response);
+        return responseObj;
+      }
+    } catch (err: any) {
+      throw err;
+    }
+  }*/
+
+
+  public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
+    try {
+      const { userId, meetRoomId, title, date, startTime, endTime, status } =
+        bookingDetails;
+        console.log(bookingDetails,"booking detal")
+      await this.isMeetRoomExists(meetRoomId);
+      const result = await this.roomAvailability(
+        meetRoomId,
+        date,
+        startTime,
+        endTime
+      );
+      console.log(result)
+      if (result) {
+        console.log("data...")
+        const bookRoomData = {...bookingDetails,userId:ctx.state.me.id}
+        const data = Booking.BookingRoomObj(bookRoomData);
+        console.log(data)
         const response = await Booking.create(data).save();
         const responseObj = BookingResponseObj.convertBookingToObj(response);
         return responseObj;
@@ -92,13 +120,15 @@ export class BookingServices {
     }
   }
 
-  public static async doEditBookings(
+ /* public static async doEditBookings(
     bookingId: number,
     bookingDetails: BookingRoomDto
   ) {
     try {
+      console.log(bookingId)
+      console.log(bookingDetails)
       let booking: any = await Booking.findOneBy({ id: bookingId });
-      // console.log(booking);
+       console.log(booking,"bookin");
       // if(!booking){
       //   throw {status: 404, message:"Booking with this ID not found"}
       // }
@@ -126,7 +156,7 @@ export class BookingServices {
     } catch (err: any) {
       throw err;
     }
-  }
+  }*/
 
   public static async doDeleteBooking(bookingId: number) {
     try {
@@ -140,6 +170,32 @@ export class BookingServices {
     } catch (err: any) {
       throw err;
     }
+  }
+
+  //fetch data from bookinh id
+
+  public static async fetchBookingWithId(bookingId: number) {
+    try {
+      const bookingData = await Booking.findOneBy({ id: bookingId });
+      if (bookingData) {
+      
+
+        return BookingResponseObj.convertBookingToObj(bookingData);
+      }
+      throw {status: 404, message:"Booking with this ID not found"}
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+
+
+
+  public static async bookingDelete(bookid: any): Promise<any> {
+
+    const booking = await User.delete({ id: bookid });
+    //const userData1: User = User.fromRegisterObj(userData);
+    return booking;
   }
 
   public static async isMeetRoomExists(MeetRoomId: number) {
@@ -239,4 +295,67 @@ export class BookingServices {
     });
     return bookingResponse;
   }
+
+
+
+  /*public static async bookindelete(bookid: any): Promise<any> {
+
+    const users = await Booking.delete({ id: bookid});
+    //const userData1: User = User.fromRegisterObj(userData);
+    return userData;
+  }*/
+
+
+
+  public static async doEditBookings(
+    bookingId: number,
+    bookingDetails: BookingRoomDto
+  ) {
+    try {
+      console.log(bookingId)
+      console.log(bookingDetails)
+      let booking: any = await Booking.findOneBy({ id: bookingId });
+       console.log(booking,"bookin");
+      // if(!booking){
+      //   throw {status: 404, message:"Booking with this ID not found"}
+      // }
+      const data = BookingResponseObj.convertBookingToObj(booking);
+      // const data = Booking.BookingRoomObj(booking);
+      const editedBookingData = {
+        ...data,
+        ...bookingDetails,
+      };
+      //check wheather slot is available or not
+      const result = await this.roomAvailability(
+        editedBookingData.meetRoomId,
+        editedBookingData.date,
+        editedBookingData.startTime,
+        editedBookingData.endTime
+      );
+
+      if (result) {
+        const result = Booking.BookingRoomObj(editedBookingData);
+        await Booking.update(bookingId, result);
+        const bookingData: any = await Booking.findOneBy({ id: bookingId });
+        const editedData = BookingResponseObj.convertBookingToObj(booking);
+        return editedData;
+      }
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
