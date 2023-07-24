@@ -5,7 +5,22 @@ import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
 import { User } from "../entities/user-entity";
 import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
+import json from "koa-json";
 const moment = require("moment");
+import { calendar_v3, google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
+
+
+
+const clientId = "403313880374-q4a82ib2c333je5bqlnoj43klf1p5d3p.apps.googleusercontent.com";
+const clientSecret = "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";
+const redirectUri = "http://localhost:3006/google/redirect";
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+
+//const oauth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URL);
+
+const oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUri);
+const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
 export class BookingServices {
   /*public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
@@ -32,12 +47,24 @@ export class BookingServices {
     }
   }*/
 
-
-  public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
+ /* public static async bookMeetRoom(bookingDetails: any, ctx: Context) {
     try {
-      const { userId, meetRoomId, title, date, startTime, endTime, status } =
-        bookingDetails;
-        console.log(bookingDetails,"booking detal")
+      const {
+        userId,
+        meetRoomId,
+        title,
+        date,
+        startTime,
+        endTime,
+        status,
+        guests,
+      } = bookingDetails;
+      console.log(bookingDetails.guests, "booking detal");
+      //const guestsArray = bookingDetails.guests.map((item: { guests: any; }) => item);
+      //console.log(guestsArray,"guestsArray");
+
+      //const parsedGuests = JSON.parse(bookingDetails.guests);
+      //console.log(parsedGuests);
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -45,22 +72,151 @@ export class BookingServices {
         startTime,
         endTime
       );
-      console.log(result)
+      console.log(result);
       if (result) {
-        console.log("data...")
-        const bookRoomData = {...bookingDetails,userId:ctx.state.me.id}
+
+        const guestsArray = guests.map((item: { guests: string; }) => item.guests);
+        console.log(guestsArray)
+        const guestsString = guestsArray.join(', ');
+        console.log(guestsString);
+        // const bookRoomData = {...bookingDetails,userId:ctx.state.me.id,guestsArray }
+        const bookRoomData = {
+          ...bookingDetails,
+          userId: ctx.state.me.id,
+          guests:guestsString,
+        };
+        console.log("join");
         const data = Booking.BookingRoomObj(bookRoomData);
-        console.log(data)
+        console.log(data, "dta");
         const response = await Booking.create(data).save();
+        console.log(response);
         const responseObj = BookingResponseObj.convertBookingToObj(response);
+        console.log(responseObj);
+
+
+      // Authenticate and get the access token
+     // const { tokens } = await oauth2Client.getToken('AUTHORIZATION_CODE'); // Replace 'AUTHORIZATION_CODE' with the actual code received from Google after the user grants permission
+
+      // Set the access token in the oauth2Client
+     // oauth2Client.setCredentials(tokens);
+        // Call the createCalendarEvent function to create the event on Google Calendar
+     //  await this.createCalendarEvent(title, guestsArray, date, startTime, endTime);
         return responseObj;
       }
     } catch (err: any) {
       throw err;
     }
+  
+}*/
+
+
+
+public static async bookMeetRoom(bookingDetails: any, ctx: Context) {
+  try {
+    const {
+      userId,
+      meetRoomId,
+      title,
+      date,
+      startTime,
+      endTime,
+      status,
+      guests,
+    } = bookingDetails;
+    console.log(bookingDetails.guests, "booking detal");
+    //const guestsArray = bookingDetails.guests.map((item: { guests: any; }) => item);
+    //console.log(guestsArray,"guestsArray");
+
+    //const parsedGuests = JSON.parse(bookingDetails.guests);
+    //console.log(parsedGuests);
+    await this.isMeetRoomExists(meetRoomId);
+    const result = await this.roomAvailability(
+      meetRoomId,
+      date,
+      startTime,
+      endTime
+    );
+    console.log(result);
+    if (result) {
+
+     // const guestsArray = guests.map((item: { guests: string; }) => item.guests);
+      //console.log(guestsArray)
+      //const guestsString = guestsArray.join(', ');
+      //console.log(guestsString);
+      // const bookRoomData = {...bookingDetails,userId:ctx.state.me.id,guestsArray }
+      const bookRoomData = {
+        ...bookingDetails,
+        userId: ctx.state.me.id,
+      
+      };
+      console.log("join");
+      const data = Booking.BookingRoomObj(bookRoomData);
+      console.log(data, "dta");
+      const response = await Booking.create(data).save();
+      console.log(response);
+      const responseObj = BookingResponseObj.convertBookingToObj(response);
+      console.log(responseObj);
+
+
+    // Authenticate and get the access token
+   // const { tokens } = await oauth2Client.getToken('AUTHORIZATION_CODE'); // Replace 'AUTHORIZATION_CODE' with the actual code received from Google after the user grants permission
+
+    // Set the access token in the oauth2Client
+   // oauth2Client.setCredentials(tokens);
+      // Call the createCalendarEvent function to create the event on Google Calendar
+   //  await this.createCalendarEvent(title, guestsArray, date, startTime, endTime);
+      return responseObj;
+    }
+  } catch (err: any) {
+    throw err;
   }
 
-  public static async getAllBookings(ctx:Context) {
+}
+
+
+//calender
+
+  public static async createCalendarEvent(
+    title: string,
+    guestsArray: string[],
+    date: string,
+    startTime: string,
+    endTime: string
+  ) {
+    try {
+      console.log("calender function.....")
+      const event: calendar_v3.Schema$Event = {
+        summary: title,
+        description: `Meeting with ${guestsArray.join(', ')}`,
+        start: {
+          dateTime: `${date}T${startTime}`,
+          timeZone: 'Asia/Kolkata', // desired timezone (e.g., 'America/New_York')
+        },
+        end: {
+          dateTime: `${date}T${endTime}`,
+          timeZone: 'Asia/Kolkata', //  desired timezone (e.g., 'America/New_York')
+        },
+        attendees: guestsArray.map((guest: string) => ({ email: guest })),
+      };
+console.log(event.attendees,"atten")
+console.log(event.start?.dateTime)
+      const response = await calendar.events.insert({
+        calendarId: 'primary', // Use 'primary' for the user's primary calendar
+        requestBody: event, // Use requestBody to pass the event object
+        sendNotifications: true,
+      });
+     console.log("event creates..")
+      console.log('Event created: %s', response.data.htmlLink);
+    } catch (err: any) {
+      console.log(err)
+      throw err;
+    }
+  }
+
+
+
+
+  public static async getAllBookings(ctx: Context) {
     try {
       let todays_bookings: Booking[] = [];
       let upcoming_bookings: Booking[] = [];
@@ -68,7 +224,9 @@ export class BookingServices {
       const current_date = moment().format("DD/MM/YYYY");
       // console.log(current_date);
       bookings.forEach((booking) => {
-        const compareDate = BookMeetRoomValidations.dateValidation(booking.date);
+        const compareDate = BookMeetRoomValidations.dateValidation(
+          booking.date
+        );
         if (compareDate == 0) {
           todays_bookings.push(booking);
         } else if (compareDate == 1) {
@@ -104,8 +262,8 @@ export class BookingServices {
     try {
       let myBookings = await Booking.findBy({ user_id: userId });
 
-      if(myBookings.length == 0){
-        throw { status: 404, message:"No history found"}
+      if (myBookings.length == 0) {
+        throw { status: 404, message: "No history found" };
       }
 
       const bookingData = myBookings.map((booking) => {
@@ -120,7 +278,7 @@ export class BookingServices {
     }
   }
 
- /* public static async doEditBookings(
+  /* public static async doEditBookings(
     bookingId: number,
     bookingDetails: BookingRoomDto
   ) {
@@ -166,7 +324,7 @@ export class BookingServices {
 
         return BookingResponseObj.convertBookingToObj(bookingData);
       }
-      throw {status: 404, message:"Booking with this ID not found"}
+      throw { status: 404, message: "Booking with this ID not found" };
     } catch (err: any) {
       throw err;
     }
@@ -178,21 +336,28 @@ export class BookingServices {
     try {
       const bookingData = await Booking.findOneBy({ id: bookingId });
       if (bookingData) {
-      
-
         return BookingResponseObj.convertBookingToObj(bookingData);
       }
-      throw {status: 404, message:"Booking with this ID not found"}
+      throw { status: 404, message: "Booking with this ID not found" };
+    } catch (err: any) {
+      throw err;
+    }
+  }
+  //
+ public static async fetchBookingWithUSERID(UserId: number) {
+    try {
+      const bookingData = await Booking.findOneByOrFail({ user_id:  UserId});
+      
+      if (bookingData) {
+        return BookingResponseObj.convertBookingToObj(bookingData);
+      }
+      throw { status: 404, message: "Booking with this ID not found" };
     } catch (err: any) {
       throw err;
     }
   }
 
-
-
-
   public static async bookingDelete(bookid: any): Promise<any> {
-
     const booking = await User.delete({ id: bookid });
     //const userData1: User = User.fromRegisterObj(userData);
     return booking;
@@ -204,7 +369,7 @@ export class BookingServices {
         id: MeetRoomId,
       });
       if (!result) {
-        throw {status: 404, message :"Meeting Room Does not Exists"}
+        throw { status: 404, message: "Meeting Room Does not Exists" };
       }
       return true;
     } catch (err: any) {
@@ -219,9 +384,11 @@ export class BookingServices {
     endTime: string
   ) {
     try {
+      console.log(MeetRoomId,"meetroomr")
       const booking_room_details = await Booking.findBy({
         meetroom_id: MeetRoomId,
       });
+      console.log(booking_room_details,"bookingdetailroom")
       if (booking_room_details.length == 0) {
         // return "Room is Available";
         return true;
@@ -244,8 +411,9 @@ export class BookingServices {
       if (clash_time.length == 0) {
         return true;
       }
-      throw {status: 400, message: 'Meeting Room is already occupied'};
+      throw { status: 400, message: "Meeting Room is already occupied" };
     } catch (err: any) {
+      console.log(err,"errrrrrrrrrrrr")
       throw err;
     }
   }
@@ -296,8 +464,6 @@ export class BookingServices {
     return bookingResponse;
   }
 
-
-
   /*public static async bookindelete(bookid: any): Promise<any> {
 
     const users = await Booking.delete({ id: bookid});
@@ -305,17 +471,15 @@ export class BookingServices {
     return userData;
   }*/
 
-
-
   public static async doEditBookings(
     bookingId: number,
     bookingDetails: BookingRoomDto
   ) {
     try {
-      console.log(bookingId)
-      console.log(bookingDetails)
+      console.log(bookingId);
+      console.log(bookingDetails);
       let booking: any = await Booking.findOneBy({ id: bookingId });
-       console.log(booking,"bookin");
+      console.log(booking, "bookin");
       // if(!booking){
       //   throw {status: 404, message:"Booking with this ID not found"}
       // }
@@ -326,13 +490,14 @@ export class BookingServices {
         ...bookingDetails,
       };
       //check wheather slot is available or not
+      console.log("data",editedBookingData)
       const result = await this.roomAvailability(
         editedBookingData.meetRoomId,
         editedBookingData.date,
         editedBookingData.startTime,
         editedBookingData.endTime
       );
-
+console.log(result,"result")
       if (result) {
         const result = Booking.BookingRoomObj(editedBookingData);
         await Booking.update(bookingId, result);
@@ -343,19 +508,12 @@ export class BookingServices {
     } catch (err: any) {
       throw err;
     }
+
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+
+  
+

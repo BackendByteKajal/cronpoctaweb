@@ -15,13 +15,27 @@ app.use(bodyParser());
 app.use(json());
 app.use(cors());
 
-//app.use(koaBody({ multipart: true, urlencoded: true }));
+/*app.use(koaBody({
+  multipart: true,
+  formidable: {
+    maxFileSize: 10 * 1024 * 1024, // Set the maximum file size allowed in bytes (10 MB in this example)
+    keepExtensions: true, // Keep the file extensions on uploaded files
+  },
+  onError: (error:any , ctx) => {
+    if (error.status === 413) {
+      ctx.status = 413;
+      ctx.body = 'File size is too large.';
+    } else {
+      ctx.throw(error);
+    }
+  },
+}));*/
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-
-app.listen(3006, () => {
-  console.log(`Applistening on the port 4000`);
+const port=3012;
+app.listen(port, () => {
+  console.log(`Applistening on the port ${port}`);
 });
 
 PostgresDbConnection.connect();
@@ -42,5 +56,6 @@ PostgresDbConnection.connect();
   api_secret: 'OGsq0bXQZBLBgP2L4_6j-WCTzJI',
   secure: true,
 });*/
+
 
 export default app;

@@ -8,8 +8,10 @@ import { BookingServices } from "./booking-services";
 import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import app from "../app";
-import  cloudinary  from 'cloudinary'
+import cloudinary from "cloudinary";
 import { CostExplorer } from "aws-sdk";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
 
 export class AdminServices {
   /*public static async addMeetRoom(data: MeetRoomDto){
@@ -22,12 +24,12 @@ export class AdminServices {
       throw err;
     }
   }*/
-  public static async addMeetRoom(data :any){
+  public static async addMeetRoom(data: any) {
     try {
       console.log("addmettservice");
-      console.log(data)
+      console.log(data);
       const result = await MeetingRoom.create(data).save();
-      console.log("data")
+      console.log("data");
       const response = MeetRoomObject.convertMeetRoomToObj(result);
       return response;
     } catch (err: any) {
@@ -35,19 +37,19 @@ export class AdminServices {
     }
   }
 
-  public static async allMeetingRooms(){
-    try{
-        const meetRooms = await MeetingRoom.find();
-        if(meetRooms){
-          return meetRooms;
-        }
-        throw { status: 404, message: "No results Found"}
-    }catch(err:any){
-        throw err;
+  public static async allMeetingRooms() {
+    try {
+      const meetRooms = await MeetingRoom.find();
+      if (meetRooms) {
+        return meetRooms;
+      }
+      throw { status: 404, message: "No results Found" };
+    } catch (err: any) {
+      throw err;
     }
   }
 
- /* public static async doEditMeetRoom(meetRoomId:number,roomDetails:MeetRoomDto){
+  /* public static async doEditMeetRoom(meetRoomId:number,roomDetails:MeetRoomDto){
     try{
       const meetRoom:any = await MeetingRoom.findOneBy({id:meetRoomId});
       if(!meetRoom){
@@ -68,13 +70,16 @@ export class AdminServices {
   }
   */
 
-
-  public static async doEditMeetRoom(meetRoomId:number,roomDetails:MeetRoomDto){
-    try{  console.log("services......")
-      const meetRoom:any = await MeetingRoom.findOneBy({id:meetRoomId});
-      console.log(meetRoom,".....")
-      if(!meetRoom){
-        throw { status: 404, message: "Meeting Room Does not Exists"}
+  public static async doEditMeetRoom(
+    meetRoomId: number,
+    roomDetails: MeetRoomDto
+  ) {
+    try {
+      console.log("services......");
+      const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
+      console.log(meetRoom, ".....");
+      if (!meetRoom) {
+        throw { status: 404, message: "Meeting Room Does not Exists" };
       }
       const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
       const editedMeetingData = {
@@ -85,43 +90,36 @@ export class AdminServices {
       await MeetingRoom.update(meetRoomId, data);
       //const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
       return meetRoom;
-    }catch(err:any){
+    } catch (err: any) {
       throw err;
     }
   }
 
+  public static async getMeetRoomHistory(meetRoomId: number) {
+    try {
+      const meetRoomHistory = await Booking.findBy({ meetroom_id: meetRoomId });
 
-
-
-
-
-
-  public static async getMeetRoomHistory(meetRoomId:number){
-    try{
-      const meetRoomHistory = await Booking.findBy({ meetroom_id:meetRoomId});
-
-      if(meetRoomHistory.length==0){
-        throw { status: 404, message: "No history found"}
+      if (meetRoomHistory.length == 0) {
+        throw { status: 404, message: "No history found" };
       }
-      const historyDetails = meetRoomHistory.map((data)=>{
+      const historyDetails = meetRoomHistory.map((data) => {
         return BookingResponseObj.convertBookingToObj(data);
-      })
-      const meetRoomDetail = await BookingServices.addExtraDetails(historyDetails);
-      const  meetRoomData = BookingServices.addDuration(meetRoomDetail);
+      });
+      const meetRoomDetail = await BookingServices.addExtraDetails(
+        historyDetails
+      );
+      const meetRoomData = BookingServices.addDuration(meetRoomDetail);
       return meetRoomData;
-    }catch(err:any){
+    } catch (err: any) {
       throw err;
     }
   }
-
-
-
 
   public static async upload(data: string, imgpath: string) {
     cloudinary.v2.config({
-      cloud_name: 'dveklqhi8',
-      api_key: '466274367117952',
-      api_secret: 'OGsq0bXQZBLBgP2L4_6j-WCTzJI',
+      cloud_name: process.env.CLOUD_NAME,
+      api_key: process.env.API_KEY,
+      api_secret: process.env.API_SECRET,
       secure: true,
     });
 
@@ -138,25 +136,11 @@ export class AdminServices {
 
         return imageUrl;
       } catch (err) {
-              console.log(err,"error")
+        console.log(err, "error");
         throw err;
       }
     } else {
       throw new Error("No file Provider!");
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 }

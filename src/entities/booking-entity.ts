@@ -14,7 +14,7 @@ export class Booking extends BaseEntity{
   private _start_time: string;
   private _end_time: string;
   private _status: string;
-  private _guests: string;
+  private _guests: string[];
   private _description: string;
 
   @PrimaryGeneratedColumn()
@@ -81,13 +81,21 @@ export class Booking extends BaseEntity{
     this._status = status;
   }
 
-  @Column({nullable:true})
+ /* @Column({nullable:true})
   public get guests(): string {
     return this._guests;
   }
   public set guests(guests: string) {
     this._guests = guests;
+  }*/
+  @Column({ type: "jsonb", nullable: true })
+  public get guests(): string[] {
+    return this._guests;
   }
+  public set guests(guests: string[]) {
+    this._guests = guests;
+  }
+
 
   @Column({nullable:true})
   public get description(): string {

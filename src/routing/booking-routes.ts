@@ -9,17 +9,18 @@ import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 
 export class BookRoute {
   public static routes(router: Router) {
-  router.post(
+ /* router.post(
+      BookingApiRoute.BookMeetRoom,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookMeetRoomValidations.bookMeetRoom,
+      BookingController.addBooking
+    );*/
+    router.post(
       BookingApiRoute.BookMeetRoom,
       AuthenticateMiddleware.AuthenticateUser,
       BookMeetRoomValidations.bookMeetRoom,
       BookingController.addBooking
     );
-    /*router.post(
-      BookingApiRoute.BookMeetRoom,
-      BookMeetRoomValidations.bookMeetRoom,
-      BookingController.addBooking
-    );*/
     router.get(
       BookingApiRoute.Bookings,
       AuthenticateMiddleware.AuthenticateUser,
@@ -42,18 +43,24 @@ export class BookRoute {
     );
     router.get(
       BookingApiRoute.FETCHBOOKINGWITHID,
+     AuthenticateMiddleware.AuthenticateUser,
       BookingController.fetchBookingWithId
+    );
+    router.get(
+      BookingApiRoute.FETCHBOOKINGWITHUSERID,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.fetchBookingWithUserId
+    );
+    router.delete(
+      BookingApiRoute.DeleteBooking,
+      AuthenticateMiddleware.AuthenticateUser,
+     // AccessValidation.editDeleteValidation,
+      BookingController.deleteBooking
     );
     /*router.delete(
       BookingApiRoute.DeleteBooking,
       AuthenticateMiddleware.AuthenticateUser,
-      AccessValidation.editDeleteValidation,
       BookingController.deleteBooking
     );*/
-    router.delete(
-      BookingApiRoute.DeleteBooking,
-      //AuthenticateMiddleware.AuthenticateUser,
-      BookingController.deleteBooking
-    );
   }
 }

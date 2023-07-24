@@ -7,65 +7,64 @@ import { Message } from "../constants/message";
 import { AuthServices } from "../Services/auth-services";
 import { UpdateUserDto } from "../dtos/request/user-update-dto";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
+import { LoginUserDto } from "../dtos/request/user-login-dto";
 
 export class UserController {
   public static async userRegister(ctx: Context) {
-    try{
+    try {
       const data: RegisterUserDto = ctx.request.body as RegisterUserDto;
-  
+
       // AuthServices.SendEmail();
       const user = await UserServices.Register(data);
       const response = UserObject.convertToObj(user);
-  
+
       ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
-    }catch(err:any){
+    } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
-      ctx.body = Utils.errorResponse(status,err.message)
+      ctx.body = Utils.errorResponse(status, err.message);
     }
   }
 
   public static async Users(ctx: Context) {
-    try{
+    try {
       const users = await UserServices.getAllUsers();
       const allUsers = users.map((ele) => {
         return UserObject.convertToObj(ele);
       });
       ctx.body = Utils.successResponse(Message.AllUsers, allUsers);
-
-    }catch(err:any){
+    } catch (err: any) {
       const status = err.status || 400;
-      ctx.status = status
-      ctx.body = Utils.errorResponse(status,err.message)
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
     }
   }
   public static async getAllGuests(ctx: Context) {
-    try{
+    try {
       const users = await UserServices.getAllGuests();
       const allUsers = users.map((ele) => {
         return UserObject.convertToObj1(ele);
       });
-      
-      ctx.body = Utils.successResponse(Message.AllGuests, allUsers);
 
-    }catch(err:any){
+      ctx.body = Utils.successResponse(Message.AllGuests, allUsers);
+    } catch (err: any) {
       const status = err.status || 400;
-      ctx.status = status
-      ctx.body = Utils.errorResponse(status,err.message)
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
     }
   }
 
-  public static async userVerification(ctx:Context){
-    try{
+  public static async userVerification(ctx: Context) {
+    try {
       const param = ctx.params.id;
       console.log(param);
       await UserServices.verifyUser(param);
-      ctx.body = Utils.successResponse(Message.UserVerified,{});
-    }catch(err:any){
+      ctx.body = Utils.successResponse(Message.UserVerified, {});
+    } catch (err: any) {
       const status = err.status || 400;
-      ctx.status = status
-      ctx.body = Utils.errorResponse(status,err.message)
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
     }
   }
 }

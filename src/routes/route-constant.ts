@@ -30,7 +30,8 @@ export const BookingApiRoute = {
   MyBookings:"/mybookings",
   EditBooking:"/editbookings/:id",
   DeleteBooking:"/deletebookings/:id",
-  FETCHBOOKINGWITHID:"/fetchBookingWithId/:id"
+  FETCHBOOKINGWITHID:"/fetchBookingWithId/:id",
+  FETCHBOOKINGWITHUSERID:"/fetchbookingwithuserid"
 }
 
 export const RouteVersion = {

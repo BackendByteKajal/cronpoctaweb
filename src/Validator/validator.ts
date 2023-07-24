@@ -2,6 +2,7 @@ import Joi, { required } from "joi";
 import { Context, Next } from "koa";
 import { Utils } from "../utils/utils";
 import { request } from "http";
+import koaBody from "koa-body";
 
 export class UserValidator {
   public static Register(ctx: Context, next: Next) {
@@ -54,7 +55,11 @@ export class UserValidator {
 
 export class AdminValidator {
   public static addMeetRoomValidation(ctx: Context, next: Next) {
+
+    
+   
     try {
+      
       const createJSON = {
         body: Joi.object({
           meetRoomName: Joi.string().trim().required().max(20).min(3),
@@ -62,15 +67,17 @@ export class AdminValidator {
           imageurl: Joi.object({
             file: Joi.any()
               .custom((value, helpers) => {
-                if (value.size > 10 * 1024 * 1024) {
+                if (value && value.size > 10 * 1024 * 1024) {
                   return helpers.error('any.max');
                 }
                 return value;
-              })
-              
-              .error(new Error('Image must be less than 10 MB')),
-          }),
+              }),
+          }).optional(), // Make the 'imageurl' object optional
         }).required(),
+        
+        
+          
+      
       };
       const req = ctx.request.body;
 
@@ -86,4 +93,7 @@ export class AdminValidator {
       ctx.body = Utils.errorResponse(400, err.message);
     }
   }
+
+  //
+  
 }

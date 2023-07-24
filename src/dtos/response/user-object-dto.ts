@@ -1,5 +1,6 @@
 import { Builder } from "builder-pattern";
 import { User } from "../../entities/user-entity";
+import { userInfo } from "os";
 
 export class UserObject {
   id: number;
@@ -25,7 +26,8 @@ export class UserObject {
   }
   public static convertToObj1(userObj: User): UserObject {
     const resp = Builder<UserObject>()
-                  .guestName(`${userObj.user_name} ${userObj.last_name}`)
+                  //.guestName(`${userObj.user_name} ${userObj.last_name}`)
+                  .guestName(userObj.email)
                
                   return resp.build();
   }

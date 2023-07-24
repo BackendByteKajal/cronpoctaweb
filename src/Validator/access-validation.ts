@@ -9,9 +9,11 @@ export class AccessValidation {
   public static async editDeleteValidation(ctx: Context, next: Next) {
     try {
       const bookingId = ctx.params.id;
+      console.log(bookingId,"bookingid")
       const loggedUserData: any = ctx.request.body;
       const loggedUserId = ctx.state.me.id;
       const booking: any = await Booking.findOneBy({ id: bookingId });
+      console.log("booking",booking);
       if(!booking){
         throw new Error("Booking with this ID not found")
       }

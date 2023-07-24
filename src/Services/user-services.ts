@@ -4,7 +4,10 @@ import { UpdateUserDto } from "../dtos/request/user-update-dto";
 import { UserObject } from "../dtos/response/user-object-dto";
 import { User } from "../entities/user-entity";
 import { UserVerification } from "../Middleware/User-Verification";
+import { configData } from "../config/config";
+import { RedisCache } from "../connection/redis-connection";
 const bcrypt = require("bcrypt");
+import jwt from 'jsonwebtoken';
 
 export class UserServices {
   public static async Register(userData: RegisterUserDto): Promise<any> {
@@ -87,4 +90,8 @@ export class UserServices {
       throw err;
     }
   }
+
+
+
+ 
 }

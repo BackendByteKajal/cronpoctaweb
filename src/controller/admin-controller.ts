@@ -18,6 +18,7 @@ import formidable from "formidable";
 import fs from "fs";
 import { Mapper } from "../Mapper/mapper";
 import { ControlTower } from "aws-sdk";
+import dotenv from "dotenv";
 
 export class AdminController {
   /*public static async AddMeetRoom(ctx: Context) {
@@ -35,36 +36,31 @@ export class AdminController {
 
   public static async AddMeetRoom(ctx: Context) {
     try {
-      console.log("ControlTower")
-      const { meetRoomName, capacity} = ctx.request
-        .body as MeetRoomDtobody;
+      const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
 
       const obj = {
         meetRoomName: meetRoomName,
-        capacity: capacity
+        capacity: capacity,
       };
-      console.log(obj)
+      console.log(obj);
       const file = ctx.request.files;
-      console.log(file,"file")
-      if (!ctx.request.files || !ctx.request.files.imageurl){
-        var imgurl='https://res.cloudinary.com/dveklqhi8/image/upload/v1689296425/mfkumpec447heqclkps7.jpg'
-
-      }
-      else{
+      console.log(file, "file");
+      if (!ctx.request.files || !ctx.request.files.imageurl) {
+        var imgurl =
+          "https://res.cloudinary.com/dveklqhi8/image/upload/v1689921891/qobugym5pwtvxxge1k2r.png";
+      } else {
         const file = ctx.request.files;
-      const form = JSON.stringify(file);
-      const data = JSON.parse(form);
-      const imgpath = data.imageurl.filepath;
+        const form = JSON.stringify(file);
+        const data = JSON.parse(form);
+        const imgpath = data.imageurl.filepath;
 
-       console.log(imgpath);
-      var imgurl = await AdminServices.upload(data, imgpath); //upload call
-      console.log(imgurl, "imgurl...........");
+        console.log(imgpath);
+        var imgurl = await AdminServices.upload(data, imgpath); //upload call
+        console.log(imgurl, "imgurl...........");
       }
-      
-      
-    
+
       const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
-          console.log("mapper",meetingRoomData)
+      console.log("mapper", meetingRoomData);
       const result = await AdminServices.addMeetRoom(meetingRoomData);
       ctx.body = Utils.successResponse(Message.MeetRoomAdded, result);
     } catch (err: any) {
@@ -90,7 +86,7 @@ export class AdminController {
     }
   }
 
- /* public static async editMeetRoom(ctx: Context) {
+  /* public static async editMeetRoom(ctx: Context) {
     try {
       const param = ctx.params.id;
       const dataToEdit = ctx.request.body as MeetRoomDto;
@@ -107,27 +103,22 @@ export class AdminController {
     }
   }
 */
-public static async editMeetRoom(ctx: Context) {
-  try {
-    const param = ctx.params.id;
-    const dataToEdit = ctx.request.body as MeetRoomDto;
-    const result = await AdminServices.doEditMeetRoom(
-      Number(param),
-      dataToEdit
-    );
+  public static async editMeetRoom(ctx: Context) {
+    try {
+      const param = ctx.params.id;
+      const dataToEdit = ctx.request.body as MeetRoomDto;
+      const result = await AdminServices.doEditMeetRoom(
+        Number(param),
+        dataToEdit
+      );
 
-    ctx.body = Utils.successResponse("Meeting Data Updated", result);
-  } catch (err: any) {
-    const status = err.status || 400;
-    ctx.status = status;
-    ctx.body = Utils.errorResponse(status, err.message);
+      ctx.body = Utils.successResponse("Meeting Data Updated", result);
+    } catch (err: any) {
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
+    }
   }
-}
-
-
-
-
-
 
   public static async meetRoomHistory(ctx: Context) {
     try {
@@ -146,5 +137,4 @@ public static async editMeetRoom(ctx: Context) {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
-
 }

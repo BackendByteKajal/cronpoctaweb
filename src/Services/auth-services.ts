@@ -18,9 +18,9 @@ export class AuthServices {
       const user: any = await this.isUserExists(email);
       // console.log("user Data",user);
       const userData = UserObject.convertToObj(user);
-      if(userData.isVerified == false){
+      /*if(userData.isVerified == false){
         throw { status:400, message:"User not verified. Please Verify to log in"}
-      }
+      }*/
       const result = await bcrypt.compare(password,user.password)
       if (result) {
         const token = this.createToken(userData);
@@ -92,9 +92,7 @@ export class AuthServices {
     const key = configData.jwt.key;
 
     // console.log(key);
-    const token = jwt.sign(
-      {id:data.id},
-      key,
+    const token = jwt.sign( {data}, key,
       // {expiresIn: 1000}
     );
     return token;

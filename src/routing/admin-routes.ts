@@ -5,6 +5,8 @@ import { UserController } from "../controller/user-controller";
 import { AdminValidator } from "../Validator/validator";
 import koaBody from "koa-body";
 
+import { fileSizeErrorHandler } from "../Middleware/customerror";
+
 export class AdminRoute {
   public static routes(router: Router) {
 
@@ -13,9 +15,12 @@ export class AdminRoute {
     router.post(MeetingRoomApiRoute.MeetRoom,koaBody({
       multipart: true,
       formidable: {
-        maxFileSize: 800 * 1024,
+        maxFileSize: 10 * 1024 * 1024, // Set the maximum file size allowed in bytes (10 MB in this example)
+        keepExtensions: true, // Keep the file extensions on uploaded files
       },
-    }),AdminValidator.addMeetRoomValidation,
+     
+    })
+    ,AdminValidator.addMeetRoomValidation,
 AdminController.AddMeetRoom);
     router.get(MeetingRoomApiRoute.MeetRoom,AdminController.getAllMeetRooms);
     router.patch(AdminApiRoutes.MeetRoom,AdminController.editMeetRoom);
