@@ -31,16 +31,16 @@ export class BookRoute {
       AuthenticateMiddleware.AuthenticateUser,
       BookingController.bookingHistory
     );
-    /*router.patch(
+    router.patch(
       BookingApiRoute.EditBooking,
       AuthenticateMiddleware.AuthenticateUser,
       AccessValidation.editDeleteValidation,
       BookingController.editBooking
-    );*/
-    router.patch(
+    );
+   /* router.patch(
       BookingApiRoute.EditBooking,
       BookingController.editBooking
-    );
+    );*/
     router.get(
       BookingApiRoute.FETCHBOOKINGWITHID,
      AuthenticateMiddleware.AuthenticateUser,

@@ -7,6 +7,9 @@ import { PostgresDbConnection } from "./connection/postgres-connection";
 const cors = require("@koa/cors");
 import cloudinary from "cloudinary";
 import koaBody from "koa-body";
+const swaggerUI = require("swagger-ui-koa");
+const YAML = require("yamljs");
+const swaggerJSDocs = YAML.load("/home/cepl/Desktop/meeting clone1/meeting-room-booking-system-backend-api/src/api.yml");
 
 const app = new Koa();
 const router = new Router();
@@ -33,7 +36,7 @@ app.use(cors());
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port=3012;
+const port=3020;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });
@@ -57,5 +60,6 @@ PostgresDbConnection.connect();
   secure: true,
 });*/
 
-
+app.use(swaggerUI.serve);
+app.use(swaggerUI.setup(swaggerJSDocs));
 export default app;

@@ -73,7 +73,7 @@ export class AdminValidator {
                 return value;
               }),
           }).optional(), // Make the 'imageurl' object optional
-        }).required(),
+        }),
         
         
           
