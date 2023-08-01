@@ -20,6 +20,7 @@ export class AccessValidation {
       const data = BookingResponseObj.convertBookingToObj(booking);
       if (data.userId == loggedUserId) {
         const current_time = AccessValidation.getCurrentTime();
+        
 
         const compareTiming = AccessValidation.editDeletePossibility(
           current_time,
@@ -118,8 +119,9 @@ export class AccessValidation {
     const todaysDate = new Date();
     const hours = todaysDate.getHours().toString().padStart(2, "0");
     const minutes = todaysDate.getMinutes().toString().padStart(2, "0");
-
+       console.log(`${hours}:${minutes}`)
     return `${hours}:${minutes}`;
+    
   }
 
   public static editDeletePossibility(
@@ -135,3 +137,15 @@ export class AccessValidation {
     return true;
   }
 }
+/*
+const currentTime = new Date();
+
+// Get the current hour, minute, and second
+const currentHour = currentTime.getHours();
+const currentMinute = currentTime.getMinutes();
+const currentSecond = currentTime.getSeconds();
+
+// You can format the time as a string if needed
+const formattedTime = `${currentHour}:${currentMinute}:${currentSecond}`;
+
+console.log("Current Time:", formattedTime);*/

@@ -8,4 +8,5 @@ export class BookingRoomDto {
     status: string;
     guests: string[];
     description:string;
+    
   }

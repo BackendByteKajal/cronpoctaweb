@@ -446,20 +446,6 @@ definitions:
   
 
 paths:
-  /deletebookings/{id}:
-    delete:
-      summary: Delete booking by id.
-      description: Booking ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          type: integer
-      security:
-        - BearerAuth: []
-      responses:
-        200:
-          description: Successful response.
 
   /login:
     post:
@@ -695,6 +681,8 @@ paths:
           description: Meeting room added successfully.
           schema:
             $ref: "#/definitions/AddMeetRoomSuccessResponse"
+        400:
+          description: Invalid input...Please check the request data.
 
   /meetrooms/{id}:
     get:
@@ -728,6 +716,8 @@ paths:
           required: true
           type: integer
           format: int32
+      security:
+        - BearerAuth: []
       responses:
         200:
           description: Booking deleted successfully.

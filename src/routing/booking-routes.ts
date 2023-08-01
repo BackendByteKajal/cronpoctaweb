@@ -18,7 +18,8 @@ export class BookRoute {
     router.post(
       BookingApiRoute.BookMeetRoom,
       AuthenticateMiddleware.AuthenticateUser,
-      BookMeetRoomValidations.bookMeetRoom,
+     BookMeetRoomValidations.bookMeetRoom,
+     //BookMeetRoomValidations.meetroomvalidation,
       BookingController.addBooking
     );
     router.get(
@@ -34,7 +35,8 @@ export class BookRoute {
     router.patch(
       BookingApiRoute.EditBooking,
       AuthenticateMiddleware.AuthenticateUser,
-      AccessValidation.editDeleteValidation,
+      //AccessValidation.editDeleteValidation,
+      BookMeetRoomValidations.bookMeetRoom,
       BookingController.editBooking
     );
    /* router.patch(
@@ -54,7 +56,7 @@ export class BookRoute {
     router.delete(
       BookingApiRoute.DeleteBooking,
       AuthenticateMiddleware.AuthenticateUser,
-     // AccessValidation.editDeleteValidation,
+      AccessValidation.editDeleteValidation,
       BookingController.deleteBooking
     );
     /*router.delete(

@@ -9,6 +9,7 @@ const Joi = require("joi").extend(require("@joi/date"));
 export class BookMeetRoomValidations {
   public static bookMeetRoom(ctx: Context, next: Next) {
     try {
+      console.log(ctx.request.body)
       const createJSON = {
         body: Joi.object({
           // userId: Joi.required(),
@@ -34,19 +35,23 @@ export class BookMeetRoomValidations {
         // console.log(validationResponse);
         throw validationResponse.error;
       }
+      //
+
+      
 
       const result = BookMeetRoomValidations.dateValidation(meetRoomDetails.date);
       const currentTime = AccessValidation.getCurrentTime();
-      const timeResult = BookMeetRoomValidations.timeValidation(meetRoomDetails.startTime,currentTime)
+      console.log("currentTime",currentTime);
+      const timeResult = BookMeetRoomValidations.timeValidation(meetRoomDetails.startTime,meetRoomDetails.endTime,currentTime,meetRoomDetails.date)
       if(result == -1){
         throw new Error("Please Enter Valid Date")
       }
-      if(result == 0 && timeResult == true){
+     if(timeResult == false){
         throw new Error("Please Enter Valid Time")
       }
       const timePossibility = BookMeetRoomValidations.timeValidation(
         meetRoomDetails.startTime,
-        meetRoomDetails.endTime
+        meetRoomDetails.endTime,currentTime,meetRoomDetails.date
       );
       if(timePossibility == false){
         throw new Error("Please Enter Valid Time")
@@ -80,17 +85,54 @@ export class BookMeetRoomValidations {
     }
   }
 
-  public static timeValidation(startTime: string, endTime: string) {
+  public static timeValidation(startTime: string, endTime: string,currentTime: string,bdate:string) {
     try {
-      const start_time = startTime.replace(":", ".");
-      const end_time = endTime.replace(":", ".");
-      console.log(start_time, end_time);
-      if (end_time <= start_time) {
-        return false; 
+
+      const todays_date = moment().format("DD/MM/YYYY");
+      const [day1, month1, year1] = todays_date.split("/");
+      const [day2, month2, year2] = bdate.split("/");
+
+      const todayDateObj = new Date(`${year1}-${month1}-${day1}`);
+      const bookingDateObj = new Date(`${year2}-${month2}-${day2}`);
+      console.log("this.timeValidation")
+      console.log(endTime)
+      console.log(startTime)
+      console.log(currentTime)
+      const currentTimeParts = currentTime.split(":");
+      const startTimeParts = startTime.split(":");
+      const endTimeParts = endTime.split(":");
+      //console.log(startTimeParts,"parts")
+      const CurrentHour = parseInt(currentTimeParts[0]);
+      const startHour = parseInt(startTimeParts[0]);
+      console.log(startHour,"startHour");
+      const startMinute = parseInt(startTimeParts[1]);
+      const endHour = parseInt(endTimeParts[0]);
+      console.log(endHour,"endhour")
+      const endMinute = parseInt(endTimeParts[1]);
+      const CurrentMinute = parseInt(currentTimeParts[1]);
+      console.log(CurrentHour,"currenthour")
+      console.log(CurrentMinute,"currentminute")
+      console.log(todayDateObj,"today")
+      console.log(bookingDateObj,"boo")
+
+       if(todayDateObj.toString() === bookingDateObj.toString() ){
+        console.log("func..")
+     if (startHour < CurrentHour || (startHour === CurrentHour && startMinute <= CurrentMinute)) {
+        //Start time is less than or equal to the current time
+        return false;
+      }
+   }
+    
+       
+      if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
+        return false;
       }
       return true;
     } catch (err: any) {
       throw err;
     }
   }
+
+
 }
+

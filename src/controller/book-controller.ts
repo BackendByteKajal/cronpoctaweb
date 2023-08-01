@@ -156,12 +156,12 @@ export class BookingController {
       const editedData = ctx.request.body as BookingRoomDto;
       console.log(editedData, "body");
      
-      
+
       const editedResponse = await BookingServices.doEditBookings(
         Number(id),
         editedData
       );
-    
+     
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
       console.log("error", err);

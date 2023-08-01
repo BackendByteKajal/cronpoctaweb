@@ -53,10 +53,12 @@ export class UserValidator {
   }
 }
 
+
+  
 export class AdminValidator {
   public static addMeetRoomValidation(ctx: Context, next: Next) {
 
-    
+    console.log("validator")
    
     try {
       
@@ -64,16 +66,16 @@ export class AdminValidator {
         body: Joi.object({
           meetRoomName: Joi.string().trim().required().max(20).min(3),
           capacity: Joi.number().integer(),
-          imageurl: Joi.object({
+          imageurl: ({
             file: Joi.any()
               .custom((value, helpers) => {
                 if (value && value.size > 10 * 1024 * 1024) {
                   return helpers.error('any.max');
                 }
                 return value;
-              }),
-          }).optional(), // Make the 'imageurl' object optional
-        }),
+              }).required(),
+          }), // Make the 'imageurl' object optional
+        }).required(),
         
         
           
@@ -94,6 +96,37 @@ export class AdminValidator {
     }
   }
 
-  //
-  
+  public static editMeetRoomValidation(ctx: Context, next: Next) {
+    console.log("editMeetRoomValidation");
+
+    try {
+      const editJSON = {
+        body: Joi.object({
+          meetRoomName: Joi.string().trim().max(20).min(3).required(), // Optional for edit
+          capacity: Joi.number().integer().required(), // Optional for edit
+          imageurl: Joi.object({
+            file: Joi.any()
+              .custom((value, helpers) => {
+                if (value && value.size > 10 * 1024 * 1024) {
+                  return helpers.error('any.max');
+                }
+                return value;
+              }).optional(), // Make the 'file' property optional for edit
+          }).optional(), // Make the 'imageurl' object optional for edit
+        }),
+      };
+
+      const req = ctx.request.body;
+      const validationResponse = editJSON.body.validate(req);
+
+      if (validationResponse && validationResponse.error) {
+        throw validationResponse.error;
+      }
+
+      return next();
+    } catch (err: any) {
+      ctx.status = 400;
+      ctx.body = Utils.errorResponse(400, err.message);
+    }
+  }
 }

@@ -95,6 +95,31 @@ export class AdminServices {
     }
   }
 
+  //
+  public static async doEditRoom(
+    meetRoomId: number,
+    roomDetails: MeetingRoom
+  ) {
+    try {
+      console.log("services......");
+      const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
+      console.log(meetRoom, ".....");
+      if (!meetRoom) {
+        throw { status: 404, message: "Meeting Room Does not Exists" };
+      }
+      const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
+      const editedMeetingData = {
+        ...meetRoomObj,
+        ...roomDetails,
+      };
+      const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
+      await MeetingRoom.update(meetRoomId, data);
+      //const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
+      return meetRoom;
+    } catch (err: any) {
+      throw err;
+    }
+  }
   public static async getMeetRoomHistory(meetRoomId: number) {
     try {
       const meetRoomHistory = await Booking.findBy({ meetroom_id: meetRoomId });

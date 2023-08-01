@@ -13,7 +13,8 @@ export const UserApiRoutes = {
 }
 
 export const AdminApiRoutes = {
-  MeetRoom:"/meetrooms/:id"
+  MeetRoom:"/meetrooms/:id",
+  EditRoom:"/editroom/:id"
 }
 
 export const PingApiRoute = {

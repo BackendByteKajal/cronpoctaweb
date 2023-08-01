@@ -45,13 +45,17 @@ export class AdminController {
       console.log(obj);
       const file = ctx.request.files;
       console.log(file, "file");
-      if (!ctx.request.files || !ctx.request.files.imageurl) {
+       
+      if (!ctx.request.files) {
         var imgurl =
           "https://res.cloudinary.com/dveklqhi8/image/upload/v1689921891/qobugym5pwtvxxge1k2r.png";
       } else {
+        console.log("path....")
         const file = ctx.request.files;
+        console.log(file,"file...")
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
+        console.log(data,"data...")
         const imgpath = data.imageurl.filepath;
 
         console.log(imgpath);
@@ -66,7 +70,8 @@ export class AdminController {
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
-      ctx.body = Utils.errorResponse(status, err);
+      console.log("errr",err)
+      ctx.body = Utils.errorResponse(status,err);
     }
   }
 
@@ -82,6 +87,7 @@ export class AdminController {
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
+      
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
@@ -110,6 +116,62 @@ export class AdminController {
       const result = await AdminServices.doEditMeetRoom(
         Number(param),
         dataToEdit
+      );
+
+      ctx.body = Utils.successResponse("Meeting Data Updated", result);
+    } catch (err: any) {
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
+    }
+  }
+
+  public static async editRoom(ctx: Context) {
+    try {
+      console.log("editroom..")
+      const param = ctx.params.id;
+      console.log("param",param)
+
+      const formData:any = ctx.request.body;
+              console.log(formData,"formdata")
+      // Access individual fields in the form data
+      const meetRoomName1 = formData.meeting_room;
+      const capacity1 = formData.capacity;
+      const imageFile = formData.imageurl.file;
+      console.log("edit")
+      
+      //const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
+
+      const obj = {
+        meetRoomName: meetRoomName1,
+        capacity: capacity1,
+      };
+      console.log(obj);
+      const file = ctx.request.files;
+      console.log(file, "file");
+       
+      if (!ctx.request.files) {
+        var imgurl =
+          "https://res.cloudinary.com/dveklqhi8/image/upload/v1689921891/qobugym5pwtvxxge1k2r.png";
+      } else {
+        console.log("path....")
+        const file = ctx.request.files;
+        console.log(file,"file...")
+        const form = JSON.stringify(file);
+        const data = JSON.parse(form);
+        console.log(data,"data...")
+        const imgpath = data.imageurl.filepath;
+
+        console.log(imgpath);
+        var imgurl = await AdminServices.upload(data, imgpath); //upload call
+        console.log(imgurl, "imgurl...........");
+      }
+
+      const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
+      console.log("mapper", meetingRoomData);
+      const result = await AdminServices.doEditRoom(
+        Number(param),
+        meetingRoomData
       );
 
       ctx.body = Utils.successResponse("Meeting Data Updated", result);

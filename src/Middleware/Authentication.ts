@@ -27,6 +27,7 @@ export class AuthenticateMiddleware {
         
           throw new Error("You are not Authenticated.")
         }
+     
           
         const cachedData = await AuthenticateMiddleware.getredisData(token);
         if (!cachedData) {

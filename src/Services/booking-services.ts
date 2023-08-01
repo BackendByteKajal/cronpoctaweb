@@ -9,6 +9,9 @@ import json from "koa-json";
 const moment = require("moment");
 import { calendar_v3, google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { Not } from "typeorm";
+//import { Not } from "typeorm/find-options/operator/Not";
+//import { Not } from "typeorm";
 
 
 
@@ -155,7 +158,7 @@ public static async bookMeetRoom(bookingDetails: any, ctx: Context) {
       const response = await Booking.create(data).save();
       console.log(response);
       const responseObj = BookingResponseObj.convertBookingToObj(response);
-      console.log(responseObj);
+      console.log(responseObj,"...");
 
 
     // Authenticate and get the access token
@@ -417,7 +420,53 @@ console.log(event.start?.dateTime)
       throw err;
     }
   }
+  public static async roomAvailabilityForEdit(
+    MeetRoomId: number,
+    date: string,
+    startTime: string,
+    endTime: string,
+    booking_id: number
+  ) {
+    try {
+      console.log(MeetRoomId,"meetroomr")
+     /* const booking_room_details = await Booking.findBy({
+        meetroom_id: MeetRoomId,
+      });*/
+      const booking_room_details = await Booking.find({
+        where: {
+          meetroom_id: MeetRoomId,
+          id: Not(booking_id) as unknown as number, // Convert to number type
+        },
+      });
+      console.log(booking_room_details,"bookingdetailroom")
+      if (booking_room_details.length == 0) {
+        // return "Room is Available";
+        return true;
+      }
+      const start_time = startTime.replace(":", ".");
+      const end_time = endTime.replace(":", ".");
 
+      const clash_time = booking_room_details.filter((ele) => {
+        const booked_start_time = ele.start_time.replace(":", ".");
+        const booked_end_time = ele.end_time.replace(":", ".");
+
+        return (
+          ((start_time >= booked_start_time && start_time < booked_end_time) ||
+            (end_time <= booked_end_time && end_time > booked_start_time) ||
+            (start_time <= booked_start_time && end_time >= booked_end_time)) &&
+          date == ele.date
+        );
+      });
+
+      if (clash_time.length == 0) {
+        return true;
+      }
+      throw { status: 400, message: "Meeting Room is already occupied" };
+    } catch (err: any) {
+      console.log(err,"errrrrrrrrrrrr")
+      throw err;
+    }
+  }
   public static async addExtraDetails(toUpdateArray: any) {
     const updatedArray = await Promise.all(
       toUpdateArray.map(async (obj: any) => {
@@ -431,6 +480,9 @@ console.log(event.start?.dateTime)
         newObj.userName = userNamedata ? userNamedata.user_name : null;
         newObj.lastName = userNamedata ? userNamedata.last_name : null;
         newObj.meetingRoomName = meetRoomData ? meetRoomData?.room_name : null;
+        console.log(newObj)
+        console.log({meetRoomData})
+        
         return newObj;
       })
     );
@@ -491,24 +543,43 @@ console.log(event.start?.dateTime)
       };
       //check wheather slot is available or not
       console.log("data",editedBookingData)
-      const result = await this.roomAvailability(
+      const result = await this.roomAvailabilityForEdit(
         editedBookingData.meetRoomId,
         editedBookingData.date,
         editedBookingData.startTime,
-        editedBookingData.endTime
+        editedBookingData.endTime,
+        bookingId
       );
 console.log(result,"result")
       if (result) {
         const result = Booking.BookingRoomObj(editedBookingData);
         await Booking.update(bookingId, result);
+    
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
-        const editedData = BookingResponseObj.convertBookingToObj(booking);
+        
+        const editedData = BookingResponseObj.convertBookingToObj(bookingData);
+        console.log(editedData)
         return editedData;
       }
     } catch (err: any) {
       throw err;
     }
 
+  }
+  public static async MeetRoomName(MeetRoomId: number) {
+    try {
+      console.log("roomfunction")
+      const Roomdetail: any = await MeetingRoom.findOneBy({ id: MeetRoomId });
+      const RoomName=Roomdetail.room_name;
+    console.log("roomname",RoomName)
+      
+      if (!Roomdetail) {
+        throw { status: 404, message: "Meeting Room Does not Exists" };
+      }
+      return RoomName;
+    } catch (err: any) {
+      throw err;
+    }
   }
 
 }

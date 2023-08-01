@@ -2,6 +2,7 @@ import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, Primary
 import { Builder } from "builder-pattern";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { type } from "os";
 
 @Entity()
 export class Booking extends BaseEntity{
@@ -57,7 +58,7 @@ export class Booking extends BaseEntity{
     this._date = date;
   }
 
-  @Column()
+  @Column( )
   public get start_time(): string {
     return this._start_time;
   }
