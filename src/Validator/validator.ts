@@ -57,29 +57,24 @@ export class UserValidator {
   
 export class AdminValidator {
   public static addMeetRoomValidation(ctx: Context, next: Next) {
+    console.log("validator");
 
-    console.log("validator")
-   
     try {
-      
       const createJSON = {
         body: Joi.object({
           meetRoomName: Joi.string().trim().required().max(20).min(3),
           capacity: Joi.number().integer(),
-          imageurl: ({
+          imageurl: {
             file: Joi.any()
               .custom((value, helpers) => {
                 if (value && value.size > 10 * 1024 * 1024) {
-                  return helpers.error('any.max');
+                  return helpers.error(" more than 10 mb");
                 }
                 return value;
-              }).required(),
-          }), // Make the 'imageurl' object optional
+              })
+              .required(),
+          }, // Make the 'imageurl' object optional
         }).required(),
-        
-        
-          
-      
       };
       const req = ctx.request.body;
 
@@ -108,10 +103,11 @@ export class AdminValidator {
             file: Joi.any()
               .custom((value, helpers) => {
                 if (value && value.size > 10 * 1024 * 1024) {
-                  return helpers.error('any.max');
+                  return helpers.error("any.max");
                 }
                 return value;
-              }).optional(), // Make the 'file' property optional for edit
+              })
+              .optional(), // Make the 'file' property optional for edit
           }).optional(), // Make the 'imageurl' object optional for edit
         }),
       };
@@ -129,4 +125,7 @@ export class AdminValidator {
       ctx.body = Utils.errorResponse(400, err.message);
     }
   }
+
+  //
+  
 }

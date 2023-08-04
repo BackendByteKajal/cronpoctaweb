@@ -9,8 +9,8 @@ import { UserController } from "../controller/user-controller";
 import { AdminValidator } from "../Validator/validator";
 import koaBody from "koa-body";
 
-import { fileSizeErrorHandler } from "../Middleware/customerror";
 import { AuthenticateMiddleware } from "../Middleware/Authentication";
+import { customerror } from "../Middleware/customerror";
 
 export class AdminRoute {
   public static routes(router: Router) {
@@ -24,10 +24,24 @@ export class AdminRoute {
           maxFileSize: 10 * 1024 * 1024, // Set the maximum file size allowed in bytes (10 MB in this example)
           keepExtensions: true, // Keep the file extensions on uploaded files
         },
+        onError: (err, ctx) => {
+          // Catch the error when the file size exceeds the maximum
+          
+          ctx.throw(400, "File size exceeds the maximum limit");
+        },
       }),
       AdminValidator.addMeetRoomValidation,
       AdminController.AddMeetRoom
+      // koaBody({
+      //   multipart: true,
+      //   formidable: {
+      //     maxFileSize: 10 * 1024 * 1024, // Set the maximum file size allowed in bytes (10 MB in this example)
+      //     keepExtensions: true, // Keep the file extensions on uploaded files
+      //   },
+      // }),
+      // customerror.fileSizeErrorHandler,
     );
+
     router.get(MeetingRoomApiRoute.MeetRoom, AdminController.getAllMeetRooms);
     router.patch(AdminApiRoutes.MeetRoom, AdminController.editMeetRoom);
     router.patch(
@@ -39,9 +53,11 @@ export class AdminRoute {
           keepExtensions: true, // Keep the file extensions on uploaded files
         },
       }),
-      AdminValidator.addMeetRoomValidation,
+      AdminValidator.editMeetRoomValidation,
       AdminController.editRoom
     );
     router.get(AdminApiRoutes.MeetRoom, AdminController.meetRoomHistory);
+    router.delete(AdminApiRoutes.DeleteRoom, AdminController.deleteRoom);
+    router.get(AdminApiRoutes.FetchRoom, AdminController.fetchRoomById);
   }
 }

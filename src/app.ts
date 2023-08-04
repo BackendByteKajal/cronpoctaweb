@@ -36,7 +36,7 @@ app.use(cors());
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port=3030;
+const port=3044;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });
