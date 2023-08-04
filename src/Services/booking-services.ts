@@ -335,8 +335,21 @@ export class BookingServices {
       if (myBookings.length == 0) {
         throw { status: 404, message: "No history found" };
       }
+      //sort data
+      const sortdata = myBookings.sort((a, b) => {
+        const dateA = moment(a.date, "DD/MM/YYYY").valueOf();
+        const dateB = moment(b.date, "DD/MM/YYYY").valueOf();
+        const startTimeA = moment(a.start_time, "HH:mm").valueOf();
+        const startTimeB = moment(b.start_time, "HH:mm").valueOf();
 
-      const bookingData = myBookings.map((booking) => {
+        if (dateA === dateB) {
+          return startTimeB - startTimeA;
+        } else {
+          return dateB - dateA;
+        }
+      });
+
+      const bookingData = sortdata.map((booking) => {
         return BookingResponseObj.convertBookingToObj(booking);
       });
       // console.log(bookingData)
