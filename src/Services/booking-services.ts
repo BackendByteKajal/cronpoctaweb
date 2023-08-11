@@ -634,12 +634,12 @@ export class BookingServices {
       let booking: any = await Booking.findOneBy({ id: bookingId });
        const current_time = AccessValidation.getCurrentTime();
        console.log("currenttime....", current_time);
-       let time = BookMeetRoomValidations.timeValidationEdit(
+      /* let time = BookMeetRoomValidations.timeValidationEdit(
          booking.start_time,
          booking.end_time,
          current_time.toString(),
          booking.date
-       );
+       );*/
       console.log(booking, "bookin");
       if (!booking) {
         throw { status: 404, message: "Booking with this ID not found" };
@@ -667,8 +667,10 @@ export class BookingServices {
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
+        const room_name=await this.MeetRoomName(editedData.meetRoomId)
         console.log(editedData);
-        return editedData;
+        return {...editedData,roomname:room_name};
+       // return editedData;
       }
     } catch (err: any) {
       throw err;
@@ -678,13 +680,13 @@ export class BookingServices {
     try {
       console.log("roomfunction");
       const Roomdetail: any = await MeetingRoom.findOneBy({ id: MeetRoomId });
-      const RoomName = Roomdetail.room_name;
-      console.log("roomname", RoomName);
+      //const RoomName = Roomdetail.room_name;
+      //console.log("roomname", RoomName);
 
       if (!Roomdetail) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
-      return RoomName;
+      return Roomdetail.room_name;
     } catch (err: any) {
       throw err;
     }

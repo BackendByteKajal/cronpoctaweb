@@ -43,10 +43,10 @@ export class AccessValidation {
           }
         }
         if (result == -1) {
-          throw new Error("Cannot Edit or Delete booking now");
-        } else if (compareTiming == false && result != 1) {
-          throw new Error("Cannot Edit or Delete booking now");
-        }
+          throw new Error("Cannot Edit or Delete booking now....");
+        }/* else if (compareTiming == false && result != 1) {
+          throw new Error("Cannot Edit or Delete booking now..");
+        }*/
 
         return next();
       }

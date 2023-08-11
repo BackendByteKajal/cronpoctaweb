@@ -24,7 +24,7 @@ export class BookRoute {
     );
     router.get(
       BookingApiRoute.Bookings,
-      //AuthenticateMiddleware.AuthenticateUser,
+      AuthenticateMiddleware.AuthenticateUser,
       BookingController.activeBookings
     );
     router.get(

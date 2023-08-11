@@ -21,7 +21,7 @@ export class UserController {
       ctx.status = 201;
       ctx.body = Utils.successResponse(Message.SuccessRegister, response);
     } catch (err: any) {
-      const status = err.status || 400;
+      const status = err.status || 408;
       ctx.status = status;
       ctx.body = Utils.errorResponse(status, err.message);
     }

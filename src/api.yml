@@ -723,3 +723,39 @@ paths:
           description: Booking deleted successfully.
           schema:
             $ref: "#/definitions/DeleteBookingSuccessResponse"
+
+  /editroom/{id}:
+    post:
+      summary: Add a new meeting room.
+      description: Add a new meeting room with image upload.
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: meetRoomName
+          in: formData
+          description: Name of the meeting room.
+          required: true
+          type: string
+        - name: capacity
+          in: formData
+          description: Capacity of the meeting room.
+          required: true
+          type: integer
+          format: int32
+        - name: imageurl
+          in: formData
+          description: Image of the meeting room.
+          required: true
+          type: file
+      responses:
+        200:
+          description: Meeting room added successfully.
+          schema:
+            $ref: "#/definitions/AddMeetRoomSuccessResponse"
+        400:
+          description: Invalid input...Please check the request data.
+  

@@ -135,9 +135,8 @@ export class AdminController {
       if (!roomData) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
-      
-      
-      const image=roomData?.image_url as string
+
+      const image = roomData?.image_url as string;
       const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
 
       const obj = {
@@ -145,7 +144,7 @@ export class AdminController {
         capacity: capacity,
       };
       console.log(obj);
-      const  file  = ctx.request.files;
+      const file = ctx.request.files;
       if (!file) {
         throw new Error("pass image..");
       }
@@ -156,12 +155,9 @@ export class AdminController {
       console.log(obj);
       // const file = ctx.request.files;
       console.log(file, "file");
-       //upload call
-       if (!ctx.request.files?.imageurl) {
-        
-        
-        var imgurl =image;
-          
+      //upload call
+      if (!ctx.request.files?.imageurl) {
+        var imgurl = image;
       } else {
         console.log("path....");
         const file = ctx.request.files;
@@ -185,7 +181,8 @@ export class AdminController {
       );
       console.log(result, "result....");
       ctx.body = Utils.successResponse("Meeting Data Updated", result);
-    } catch (err: any) {const status = err.status || 400;
+    } catch (err: any) {
+      const status = err.status || 400;
       ctx.status = status;
       console.log("errr", err);
       ctx.body = Utils.errorResponse(status, err);
@@ -243,4 +240,5 @@ export class AdminController {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
+ 
 }
