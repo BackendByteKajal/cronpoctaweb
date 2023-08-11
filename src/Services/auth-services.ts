@@ -46,6 +46,7 @@ export class AuthServices {
       // const result = await bcrypt.compare(password,admin.password)
       if (admin.password == password) {
         const token = this.createToken(adminData);
+        
         return {
           adminDetails:adminData,
           token
@@ -126,4 +127,6 @@ export class AuthServices {
 
     console.log((error: any) => error);
   }
+
+  
 }

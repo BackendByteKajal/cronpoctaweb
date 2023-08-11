@@ -95,8 +95,36 @@ export class AdminServices {
     }
   }
 
+  //
+  public static async doEditRoom(
+    meetRoomId: number,
+    roomDetails: MeetingRoom
+  ) {
+    try {
+      console.log("services......");
+      console.log(roomDetails,"roomdetail")
+      const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
+      console.log(meetRoom, ".....");
+      if (!meetRoom) {
+        throw { status: 404, message: "Meeting Room Does not Exists" };
+      }
+      const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(roomDetails);
+      const editedMeetingData = {
+        ...meetRoomObj,
+        ...roomDetails,
+      };
+      const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
+      console.log("data",data)
+      await MeetingRoom.update(meetRoomId, data);
+      const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
+      return response;
+    } catch (err: any) {
+      throw err;
+    }
+  }
   public static async getMeetRoomHistory(meetRoomId: number) {
     try {
+         console.log("getmeethistory")
       const meetRoomHistory = await Booking.findBy({ meetroom_id: meetRoomId });
 
       if (meetRoomHistory.length == 0) {
@@ -108,7 +136,11 @@ export class AdminServices {
       const meetRoomDetail = await BookingServices.addExtraDetails(
         historyDetails
       );
-      const meetRoomData = BookingServices.addDuration(meetRoomDetail);
+      //const meetRoomData = BookingServices.addDuration(meetRoomDetail);
+      //my change
+      const meetRoomDataduration = BookingServices.addDuration(meetRoomDetail);
+      const meetRoomData = BookingServices.addToatalAttendies(meetRoomDataduration);
+      
       return meetRoomData;
     } catch (err: any) {
       throw err;
@@ -141,6 +173,31 @@ export class AdminServices {
       }
     } else {
       throw new Error("No file Provider!");
+    }
+  }
+  //delete room
+  public static async doDeleteBooking(roomId: number) {
+    try {
+      const roomData = await MeetingRoom.findOneBy({ id: roomId });
+      if (roomData) {
+        await MeetingRoom.delete(roomId);
+
+        return MeetRoomObject.convertMeetRoomToObj(roomData);
+      }
+      throw { status: 404, message: "Room with this ID not found" };
+    } catch (err: any) {
+      throw err;
+    }
+  }
+  public static async fetchRoomWithId(roomId: number) {
+    try {
+      const roomData = await MeetingRoom.findOneBy({ id: roomId });
+      if (roomData) {
+        return MeetRoomObject.convertMeetRoomToObj(roomData);
+      }
+      throw { status: 404, message: "Room with this ID not found" };
+    } catch (err: any) {
+      throw err;
     }
   }
 }

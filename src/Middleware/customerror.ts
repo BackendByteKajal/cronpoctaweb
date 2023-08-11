@@ -1,15 +1,20 @@
 import { Context, Next } from "koa";
-import { ValidationError } from "joi";
-import { error } from "console";
+import koaBody from "koa-body";
+import app from "../app";
 
-export async function fileSizeErrorHandler(ctx: Context, next: Next) {
-  try {
-    console.log("next")
-    await next();
-  } catch (err) {
 
-    throw new Error("You are not Authenticated.")
+
+export class customerror {
+  public static async fileSizeErrorHandler(ctx: Context, next: Next) {
+    try {
+    
+        console.log("FileSystemHand");
+        await next();
+    } catch (err: any) {
+      console.log("FileSystemHandlecatch");
+      throw err;
       
-
+    }
   }
 }
+export default customerror;

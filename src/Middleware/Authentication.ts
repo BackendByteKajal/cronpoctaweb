@@ -10,7 +10,7 @@ const jwt = require("jsonwebtoken");
 export class AuthenticateMiddleware {
   public static async AuthenticateUser(ctx: Context, next: any) {
     try{
-      const accessToken = ctx.headers.authorization;
+      const accessToken = ctx.headers.authorization ;
       console.log("user authenticate")
       if (!accessToken) {
         throw new Error("You are not Authenticated.")
@@ -27,6 +27,7 @@ export class AuthenticateMiddleware {
         
           throw new Error("You are not Authenticated.")
         }
+     
           
         const cachedData = await AuthenticateMiddleware.getredisData(token);
         if (!cachedData) {

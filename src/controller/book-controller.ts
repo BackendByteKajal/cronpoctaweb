@@ -67,19 +67,24 @@ export class BookingController {
     }
   }
 
-  public static async activeBookings(ctx: Context) {
+ public static async activeBookings(ctx: Context) {
     try {
+      // Get all bookings using the BookingServices.getAllBookings method
       const allBookings = await BookingServices.getAllBookings(ctx);
 
+      // Check if there are any active bookings
       if (
-        allBookings.todays_bookings.length == 0 &&
-        allBookings.upcoming_bookings.length == 0
+        allBookings.todays_bookings.length === 0 &&
+        allBookings.upcoming_bookings.length === 0
       ) {
+        // Throw an error if no active bookings are found
         throw { status: 400, message: "No meetings found" };
       }
 
+      // Respond with success and the data containing active bookings
       ctx.body = Utils.successResponse(Message.ActiveBookings, allBookings);
     } catch (err: any) {
+      // Handle any errors and respond with an error message
       const status = err.status || 400;
       ctx.status = status;
       ctx.body = Utils.errorResponse(status, err.message);
@@ -156,12 +161,12 @@ export class BookingController {
       const editedData = ctx.request.body as BookingRoomDto;
       console.log(editedData, "body");
      
-      
+
       const editedResponse = await BookingServices.doEditBookings(
         Number(id),
         editedData
       );
-    
+     
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
       console.log("error", err);

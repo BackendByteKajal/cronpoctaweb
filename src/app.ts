@@ -7,13 +7,37 @@ import { PostgresDbConnection } from "./connection/postgres-connection";
 const cors = require("@koa/cors");
 import cloudinary from "cloudinary";
 import koaBody from "koa-body";
+const swaggerUI = require("swagger-ui-koa");
+const YAML = require("yamljs");
+const swaggerJSDocs = YAML.load("/home/cepl/Desktop/meeting clone1/meeting-room-booking-system-backend-api/src/api.yml");
+
 
 const app = new Koa();
 const router = new Router();
+app.keys = ["mrbskey"];
 
+//import passport from "./passport";
+import session from 'koa-session';
+
+import passportmodule from "koa-passport";
 app.use(bodyParser());
 app.use(json());
 app.use(cors());
+
+app.use(session(app)); // Use koa-session
+app.use(passportmodule.initialize());
+app.use(passportmodule.session());
+app.use(
+  session(
+    {
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      renew: true,
+    },
+    app
+  )
+);
+
+//app.use(cors({ origin: config.clientUrl, credentials: true }));
 
 /*app.use(koaBody({
   multipart: true,
@@ -33,7 +57,7 @@ app.use(cors());
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port=3012;
+const port=3045;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });
@@ -56,6 +80,8 @@ PostgresDbConnection.connect();
   api_secret: 'OGsq0bXQZBLBgP2L4_6j-WCTzJI',
   secure: true,
 });*/
-
-
+//app.use(passport.initialize());
+//app.use(passport.session());
+app.use(swaggerUI.serve);
+app.use(swaggerUI.setup(swaggerJSDocs));
 export default app;

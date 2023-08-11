@@ -45,13 +45,17 @@ export class AdminController {
       console.log(obj);
       const file = ctx.request.files;
       console.log(file, "file");
-      if (!ctx.request.files || !ctx.request.files.imageurl) {
+
+      if (!ctx.request.files) {
         var imgurl =
           "https://res.cloudinary.com/dveklqhi8/image/upload/v1689921891/qobugym5pwtvxxge1k2r.png";
       } else {
+        console.log("path....");
         const file = ctx.request.files;
+        console.log(file, "file...");
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
+        console.log(data, "data...");
         const imgpath = data.imageurl.filepath;
 
         console.log(imgpath);
@@ -66,6 +70,7 @@ export class AdminController {
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
+      console.log("errr", err);
       ctx.body = Utils.errorResponse(status, err);
     }
   }
@@ -82,6 +87,7 @@ export class AdminController {
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
+
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
@@ -120,6 +126,69 @@ export class AdminController {
     }
   }
 
+  public static async editRoom(ctx: Context) {
+    try {
+      const param = ctx.params.id;
+      const roomData = await MeetingRoom.findOneBy({ id: param });
+      console.log("roomData", roomData);
+
+      if (!roomData) {
+        throw { status: 404, message: "Meeting Room Does not Exists" };
+      }
+
+      const image = roomData?.image_url as string;
+      const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
+
+      const obj = {
+        meetRoomName: meetRoomName,
+        capacity: capacity,
+      };
+      console.log(obj);
+      const file = ctx.request.files;
+      if (!file) {
+        throw new Error("pass image..");
+      }
+      console.log(file, "file");
+
+      //const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
+
+      console.log(obj);
+      // const file = ctx.request.files;
+      console.log(file, "file");
+      //upload call
+      if (!ctx.request.files?.imageurl) {
+        var imgurl = image;
+      } else {
+        console.log("path....");
+        const file = ctx.request.files;
+        console.log(file, "file...");
+        const form = JSON.stringify(file);
+        const data = JSON.parse(form);
+        console.log(data, "data...");
+        const imgpath = data.imageurl.filepath;
+
+        console.log(imgpath);
+        var imgurl = await AdminServices.upload(data, imgpath); //upload call
+        console.log(imgurl, "imgurl...........");
+      }
+      console.log(imgurl, "imgurl...........");
+
+      const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
+      console.log("mapper", meetingRoomData);
+      const result = await AdminServices.doEditRoom(
+        Number(param),
+        meetingRoomData
+      );
+      console.log(result, "result....");
+      ctx.body = Utils.successResponse("Meeting Data Updated", result);
+    } catch (err: any) {
+      const status = err.status || 400;
+      ctx.status = status;
+      console.log("errr", err);
+      ctx.body = Utils.errorResponse(status, err);
+    }
+  }
+  //meetroomhistory
   public static async meetRoomHistory(ctx: Context) {
     try {
       const meetRoomId = ctx.params.id;
@@ -137,4 +206,39 @@ export class AdminController {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
+  //delete room
+  public static async deleteRoom(ctx: Context) {
+    try {
+      const id = ctx.params.id;
+      const deletedDataResponse = await AdminServices.doDeleteBooking(
+        Number(id)
+      );
+
+      ctx.body = Utils.successResponse(
+        Message.DeletedRoom,
+        deletedDataResponse
+      );
+    } catch (err: any) {
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
+    }
+  }
+  //fetch room with id
+
+  public static async fetchRoomById(ctx: Context) {
+    try {
+      console.log("fetch room");
+      const id = ctx.params.id;
+      console.log("id", id);
+      const Response = await AdminServices.fetchRoomWithId(Number(id));
+
+      ctx.body = Utils.successResponse(Message.FetchRoom, Response);
+    } catch (err: any) {
+      const status = err.status || 400;
+      ctx.status = status;
+      ctx.body = Utils.errorResponse(status, err.message);
+    }
+  }
+ 
 }
