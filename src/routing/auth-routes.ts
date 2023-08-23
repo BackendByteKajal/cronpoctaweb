@@ -15,21 +15,33 @@ export class AuthRoute {
     router.get(
       "/google",
       passport.authenticate("google", {
-        scope: ["profile", "email", "openid"],
+        scope: [
+          "profile",
+          "email",
+          "openid",
+          "https://www.googleapis.com/auth/calendar",
+        ],
       })
     );
     router.get(
       "/google/callback",
       passport.authenticate("google", {
         //console.log("xbhh")
-        successRedirect: "https://6b97-27-107-28-2.ngrok-free.app/home",
-        failureRedirect: "https://6b97-27-107-28-2.ngrok-free.app//history",
+        successRedirect: "/login",
+        failureRedirect: "/fail",
       })
     );
-    router.get("/", (ctx) => {
+    router.get("/login", (ctx) => {
+      ctx.body = {
+        message: "login.................",
+      };
+    });
+    router.get("/fail", (ctx) => {
       ctx.body = {
         message: "failed Authentication",
       };
     });
   }
+
+  //
 }

@@ -9,15 +9,17 @@ import cloudinary from "cloudinary";
 import koaBody from "koa-body";
 const swaggerUI = require("swagger-ui-koa");
 const YAML = require("yamljs");
-const swaggerJSDocs = YAML.load("/home/cepl/Desktop/meeting clone1/meeting-room-booking-system-backend-api/src/api.yml");
 
+const swaggerJSDocs = YAML.load(
+  "/home/cepl/Desktop/meeting clone1/meeting-room-booking-system-backend-api/src/api.yml"
+);
 
 const app = new Koa();
 const router = new Router();
 app.keys = ["mrbskey"];
 
 //import passport from "./passport";
-import session from 'koa-session';
+import session from "koa-session";
 
 import passportmodule from "koa-passport";
 app.use(bodyParser());
@@ -55,9 +57,10 @@ app.use(
   },
 }));*/
 
+
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port=3045;
+const port = 5005;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });

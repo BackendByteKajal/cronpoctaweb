@@ -7,24 +7,32 @@ import { User } from "../entities/user-entity";
 import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 import json from "koa-json";
 const moment = require("moment");
-import { calendar_v3, google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
+import { calendar_v3, google } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
 import { Not } from "typeorm";
 import { AccessValidation } from "../Validator/access-validation";
+import { AccessTokenManager } from "../accesstokenmanager";
+//import { getAccessToken } from "../passport/passport";
+//import { getAccessToken } from "../exportvariable";
 //import { Not } from "typeorm/find-options/operator/Not";
 //import { Not } from "typeorm";
 
-
-
-const clientId = "403313880374-q4a82ib2c333je5bqlnoj43klf1p5d3p.apps.googleusercontent.com";
-const clientSecret = "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";
-const redirectUri = "http://localhost:3006/google/redirect";
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+// const clientId =
+//   "403313880374-q4a82ib2c333je5bqlnoj43klf1p5d3p.apps.googleusercontent.com";
+// const clientSecret = "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";
+// const redirectUri = "http://localhost:3006/google/redirect";
+// const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 
 //const oauth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URL);
 
-const oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUri);
-const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+//const oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUri);
+//const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+const CALLBACK_URL = "http://localhost:4000/google/callback";
+
+const GOOGLE_CLIENT_ID =
+  "995937983126-f5kvdkk3fnbon2159f7kh2dd9ap8p4uq.apps.googleusercontent.com";
+const GOOGLE_CLIENT_SECRET = "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";
+const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 
 export class BookingServices {
   /*public static async bookMeetRoom(bookingDetails: BookingRoomDto,ctx:Context) {
@@ -156,15 +164,16 @@ export class BookingServices {
         console.log(response);
         const responseObj = BookingResponseObj.convertBookingToObj(response);
         console.log(responseObj, "...");
+        const result = await eventbook(data);
 
-        // Authenticate and get the access token
-        // const { tokens } = await oauth2Client.getToken('AUTHORIZATION_CODE'); // Replace 'AUTHORIZATION_CODE' with the actual code received from Google after the user grants permission
-
-        // Set the access token in the oauth2Client
-        // oauth2Client.setCredentials(tokens);
-        // Call the createCalendarEvent function to create the event on Google Calendar
-        //  await this.createCalendarEvent(title, guestsArray, date, startTime, endTime);
-        return responseObj;
+        if (result.success) {
+          console.log("notification done");
+          return responseObj;
+          //ctx.body = { msg: result.msg };
+        } else {
+          console.log("event fail");
+        }
+        // return responseObj;
       }
     } catch (err: any) {
       throw err;
@@ -632,8 +641,8 @@ export class BookingServices {
       console.log(bookingId);
       console.log(bookingDetails);
       let booking: any = await Booking.findOneBy({ id: bookingId });
-       const current_time = AccessValidation.getCurrentTime();
-       console.log("currenttime....", current_time);
+      const current_time = AccessValidation.getCurrentTime();
+      console.log("currenttime....", current_time);
       /* let time = BookMeetRoomValidations.timeValidationEdit(
          booking.start_time,
          booking.end_time,
@@ -667,10 +676,10 @@ export class BookingServices {
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
-        const room_name=await this.MeetRoomName(editedData.meetRoomId)
+        const room_name = await this.MeetRoomName(editedData.meetRoomId);
         console.log(editedData);
-        return {...editedData,roomname:room_name};
-       // return editedData;
+        return { ...editedData, roomname: room_name };
+        // return editedData;
       }
     } catch (err: any) {
       throw err;
@@ -693,7 +702,111 @@ export class BookingServices {
   }
 }
 
+//
 
+const calendar = google.calendar("v3"); // Create an instance of the Calendar service
 
+async function calendarnotification(requestData: any) {
   
+     const token= AccessTokenManager.getAccessToken();
+  console.log("Access Token:", token);
+  console.log("calender");
+  const oAuth2Client = new google.auth.OAuth2(
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    CALLBACK_URL
+  );
+  oAuth2Client.setCredentials({
+    //token,
+    // token,
+    access_token:
+      "ya29.a0AfB_byBbec8cgHjzNksQNFMq_rXzJfEC4ShTIap3NIX-f3eXLt7Cc61ek7MpsdDnSvIfxJYBr6SdC7cY1nlypQcsaFiS8RHwQOgwf9ilWOeDnnO4noUOLHg2SoZM2lnMqrsNqPGMXyt2y4HNwfK2H-jchVJ-OgltXwmWEAaCgYKAdcSARESFQHsvYlsaLl1JUbOemJ-41rY8Qt2FQ0173",
+    //"ya29.a0AfB_byDWjomy6cmQ4QO_BhhY7rwANPVpw3oWSgUsPgrYuiNS24KJ-Fqt8fSwEolUooRazvMh0AtoQ2FfGk90rssI9N4SxBKmwJZz_7R8GiQ_pNSGIoCb9Duq8waAtRVuCJgDCgSheoh2lRNQWouK4xIBjpaLl4gk-ghNtQaCgYKAf8SARESFQHsvYlswCj1SGE0OefzBezCgVOeTQ0173"
+  });
+  oAuth2Client.credentials.access_token =token;
+   // "ya29.a0AfB_byCAeNcu71WDp6b-quMWIWJwfeDxRnyL2n3AKDAt0ATOdfydJCaC6-VUGYV8vJjKz1x_rjyW_N2DCWZvElcE0boy_Bz0EeKfqgvFu0ngug7N02tDVbuPqHrKZSP1h_fRYOqussDuAQkhbnat5N7aCT-2NFEpR_dHRgaCgYKARsSARESFQHsvYls9IYFje1NeLn_7j3ennaLWg0173";
+  console.log("to....", oAuth2Client.credentials.access_token);
+  // oAuth2Client.credentials.access_token =""
 
+  const GuestsEmail = requestData.guests.map((guest: { guests: any }) => ({
+    email: guest.guests,
+  }));
+  console.log("GuestsEmail", GuestsEmail);
+  console.log(requestData.start_time, requestData.date, "time date");
+  const eventStartTime = convertToISODate(
+    requestData.date,
+    requestData.start_time
+  );
+  console.log(eventStartTime, "starttime");
+  const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
+
+  try {
+    console.log("try");
+    const response = await calendar.events.insert({
+      calendarId: "primary",
+      auth: oAuth2Client,
+      requestBody: {
+        summary: requestData.title,
+        description: requestData.description,
+
+        start: {
+          dateTime: eventStartTime,
+          timeZone: "Asia/Kolkata",
+        },
+        end: {
+          dateTime: eventEndTime,
+          timeZone: "Asia/Kolkata",
+        },
+        attendees: GuestsEmail,
+      },
+    });
+
+    console.log("Event created:", response.data);
+    return { success: true, response: response.data };
+    console.log("Event created:", response.data);
+    //ctx.body = { msg: "Event created successfully" };
+  } catch (error) {
+    console.error("Error creating event:", error);
+    //ctx.status = 500;
+    //ctx.body = { msg: "Error creating event" };
+
+    return { success: false, error: error };
+  }
+}
+
+//
+function convertToISODate(dateString: string, timeString: string): string {
+  console.log("conver");
+  console.log(dateString);
+
+  console.log(timeString);
+  const dateParts = dateString.split("/");
+  const year = parseInt(dateParts[2]);
+  const month = parseInt(dateParts[1]);
+  const day = parseInt(dateParts[0]);
+
+  const timeParts = timeString.split(":");
+  const hour = parseInt(timeParts[0]);
+  const minute = parseInt(timeParts[1]);
+
+  const dateTime = new Date(year, month - 1, day, hour, minute);
+  return dateTime.toISOString();
+}
+//
+async function eventbook(requestData: Booking) {
+  // const eventStartTime = convertToISODate(
+  //   requestData.date,
+  //   requestData.start_time
+  // );
+  // const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
+
+  try {
+    await calendarnotification(requestData);
+
+    //console.log("Event created:", response.data);
+    return { success: true, msg: "Event created successfully" };
+  } catch (error) {
+    console.error("Error creating event:", error);
+    return { success: false, msg: "Error creating event" };
+  }
+}

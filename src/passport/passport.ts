@@ -1,25 +1,45 @@
 import mail from "@sendgrid/mail";
+import { google } from "googleapis";
 import passportmodule from "koa-passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+//import { accesstokengoogle } from "../exportvariable";
+import dotenv from "dotenv";
+import { Console } from "console";
+
+import { AccessTokenManager } from "../accesstokenmanager";
+import cookies from "cookies";
+dotenv.config({ path: ".env" });
 const GOOGLE_CLIENT_ID =
   "995937983126-3np3l4625dm5hdsv39lb9itfth1gag1n.apps.googleusercontent.com";
-
+// "995937983126-3np3l4625dm5hdsv39lb9itfth1gag1n.apps.googleusercontent.com";
 const GOOGLE_CLIENT_SECRET = "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";
-// Passport Google strategy for authentication
-/*const GOOGLE_CLIENT_ID =
-  "995937983126-3np3l4625dm5hdsv39lb9itfth1gag1n.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";*/
+
 passportmodule.use(
   new GoogleStrategy(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://ce67-27-107-28-2.ngrok-free.app/google/callback",
+      callbackURL: "http://localhost:5005/google/callback",
       // callbackURL: "https://localhost:5002/google/callback",
     },
     (accessToken: string, refreshToken: string, profile: any, done: any) => {
       console.log(profile);
       console.log("accestoken", accessToken);
+      console.log(profile);
+      console.log("accessToken", accessToken);
+
+      //Set up an OAuth2Client instance with the access token
+      const oAuth2Client = new google.auth.OAuth2();
+      oAuth2Client.setCredentials({
+        access_token: accessToken,
+      });
+      console.log(oAuth2Client.credentials.access_token, "cre.....");
+
+      AccessTokenManager.setAccessToken(accessToken);
+
+      console.log("setacces", AccessTokenManager.getAccessToken());
+      // Now you can use the oAuth2Client to make API calls
+      const calendar = google.calendar("v3");
       const user = {
         id: profile.id,
         displayName: profile.displayName,
@@ -37,6 +57,7 @@ passportmodule.deserializeUser<any, any>((user, done) => {
   done(null, user);
 });
 export default passportmodule;
+
 // const passport = require("passport");
 // const GoogleStrategy = require("passport-google-oauth20");
 // const GOOGLE_CLIENT_ID =
