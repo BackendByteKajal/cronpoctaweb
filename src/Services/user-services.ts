@@ -7,7 +7,8 @@ import { UserVerification } from "../Middleware/User-Verification";
 import { configData } from "../config/config";
 import { RedisCache } from "../connection/redis-connection";
 const bcrypt = require("bcrypt");
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import { UserLogin } from "../entities/userlogin-entity";
 
 export class UserServices {
   public static async Register(userData: RegisterUserDto): Promise<any> {
@@ -26,7 +27,35 @@ export class UserServices {
       throw err;
     }
   }
+  //
+  public static async Registeruser(userData: any) {
+    console.log("user..");
+    const result = await this.isUserExistsUser(userData.email);
 
+    const saveUser: UserLogin = UserLogin.fromRegisterObj(userData);
+    if (result) {
+      console.log(result);
+      const user: UserLogin = await UserLogin.create(saveUser).save();
+      return user;
+    } else {
+      console.log("update");
+      await UserLogin.update(
+        { email: userData.email }, // Condition to find the user
+        {
+          googleid: userData.googleid,
+
+          authtoken: userData.authtoken,
+        }
+      );
+    }
+
+    const user: UserLogin | null = await UserLogin.findOne({
+      where: { email: userData.email },
+    });
+    return user;
+  }
+
+  //
   public static async getAllUsers() {
     try {
       const users = await User.find();
@@ -62,6 +91,15 @@ export class UserServices {
       throw err;
     }
   }
+  public static async isUserExistsUser(email: string): Promise<boolean> {
+    console.log(email);
+    const user: UserLogin | null = await UserLogin.findOne({ where: { email: email } });
+    console.log(user, "user");
+    if (user) {
+      return false;
+    }
+    return true;
+  }
 
   public static async verifyUser(userVerifyId: number) {
     try {
@@ -86,7 +124,4 @@ export class UserServices {
       throw err;
     }
   }
-
-  
-
 }

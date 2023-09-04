@@ -9,7 +9,7 @@ import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 
 export class BookRoute {
   public static routes(router: Router) {
- /* router.post(
+    /* router.post(
       BookingApiRoute.BookMeetRoom,
       AuthenticateMiddleware.AuthenticateUser,
       BookMeetRoomValidations.bookMeetRoom,
@@ -17,14 +17,15 @@ export class BookRoute {
     );*/
     router.post(
       BookingApiRoute.BookMeetRoom,
+      //AuthenticateMiddleware.AuthenticateUseracces,
       AuthenticateMiddleware.AuthenticateUser,
-     BookMeetRoomValidations.bookMeetRoom,
-     //BookMeetRoomValidations.meetroomvalidation,
+      BookMeetRoomValidations.bookMeetRoom,
+      //BookMeetRoomValidations.meetroomvalidation,
       BookingController.addBooking
     );
     router.get(
       BookingApiRoute.Bookings,
-      AuthenticateMiddleware.AuthenticateUser,
+      //AuthenticateMiddleware.AuthenticateUser,
       BookingController.activeBookings
     );
     router.get(
@@ -35,18 +36,18 @@ export class BookRoute {
     router.patch(
       BookingApiRoute.EditBooking,
       AuthenticateMiddleware.AuthenticateUser,
-      //AccessValidation.editDeleteValidation,
+      AccessValidation.editDeleteValidation,
       //BookMeetRoomValidations.EditRoomboking,
       BookMeetRoomValidations.bookMeetRoom,
       BookingController.editBooking
     );
-   /* router.patch(
+    /* router.patch(
       BookingApiRoute.EditBooking,
       BookingController.editBooking
     );*/
     router.get(
       BookingApiRoute.FETCHBOOKINGWITHID,
-     AuthenticateMiddleware.AuthenticateUser,
+      AuthenticateMiddleware.AuthenticateUser,
       BookingController.fetchBookingWithId
     );
     router.get(

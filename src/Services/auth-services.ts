@@ -1,4 +1,4 @@
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import { configData } from "../config/config";
 import { User } from "../entities/user-entity";
 import { Utils } from "../utils/utils";
@@ -8,6 +8,7 @@ import { Admin } from "../entities/admin-entity";
 import { NodeCaching } from "../Middleware/Node-cache";
 import { RedisCache } from "../connection/redis-connection";
 import { RedisSessionExpires } from "../enum/redis-expire-session";
+
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -21,22 +22,25 @@ export class AuthServices {
       /*if(userData.isVerified == false){
         throw { status:400, message:"User not verified. Please Verify to log in"}
       }*/
-      const result = await bcrypt.compare(password,user.password)
+      const result = await bcrypt.compare(password, user.password);
       if (result) {
         const token = this.createToken(userData);
 
         this.redisCaching(userData, token);
         // NodeCaching.set(token,userData,)
         return {
-          userDetails:userData,
-          token
-        }
+          userDetails: userData,
+          token,
+        };
       } else {
-        throw {status: 400, message:"Please check credentials"}
+        throw { status: 400, message: "Please check credentials" };
       }
     } catch (err: any) {
       throw err;
     }
+  }
+  static googlecb(context: Context, next: Next) {
+    next();
   }
 
   public static async loginAdmin(email: string, password: string) {
@@ -46,13 +50,13 @@ export class AuthServices {
       // const result = await bcrypt.compare(password,admin.password)
       if (admin.password == password) {
         const token = this.createToken(adminData);
-        
+
         return {
-          adminDetails:adminData,
-          token
-        }
+          adminDetails: adminData,
+          token,
+        };
       } else {
-        throw {status: 400, message:"Please check credentials"}
+        throw { status: 400, message: "Please check credentials" };
       }
     } catch (err: any) {
       throw err;
@@ -65,7 +69,7 @@ export class AuthServices {
         where: { email: email },
       });
       if (!user) {
-        throw {status: 404, message:"User Does not Exists"}
+        throw { status: 404, message: "User Does not Exists" };
       }
       return user;
     } catch (err: any) {
@@ -79,29 +83,43 @@ export class AuthServices {
         where: { email: email },
       });
       if (!user) {
-        throw {status: 404, message:"Admin Does not Exists"}
+        throw { status: 404, message: "Admin Does not Exists" };
       }
       return user;
     } catch (err: any) {
       throw err;
     }
   }
-  
+
   public static createToken(data: any) {
     // console.log("data:",data);
     // const { email, password } = data;
     const key = configData.jwt.key;
 
     // console.log(key);
-    const token = jwt.sign( {data}, key,
+    const token = jwt.sign(
+      { data },
+      key
       // {expiresIn: 1000}
     );
     return token;
   }
 
-  public static redisCaching(userData: UserObject, token: string) {
+  public static redisCaching(userData: any, token: string) {
     const redisObj = RedisCache.connect();
-    redisObj.set(token, JSON.stringify(userData), RedisSessionExpires.UserLogin);
+    redisObj.set(
+      token,
+      JSON.stringify(userData),
+      RedisSessionExpires.UserLogin
+    );
+  }
+  public static redisCachingauth(userData: any, token: string) {
+    const redisObj = RedisCache.connect();
+    redisObj.set(
+      token,
+      JSON.stringify(userData),
+      RedisSessionExpires.UserLogin
+    );
   }
 
   public static async SendEmail() {
@@ -128,5 +146,52 @@ export class AuthServices {
     console.log((error: any) => error);
   }
 
-  
+  //
+  public static async setCookieAndReturnToken(
+    ctx: Context,
+    name: string,
+    value: any
+  ) {
+    const cookieOptions = {
+      secure: false,
+      signed: true,
+      overwrite: true,
+    };
+
+    // Set the "meett" cookie
+    ctx.cookies.set(name, value, cookieOptions);
+
+    // Get the value of the "meett" cookie
+    const cookiestoken = ctx.cookies.get(name);
+
+    // Log the value of the "meett" cookie
+    // console.log(cookiestoken, "---------------");
+
+    return cookiestoken;
+  }
+
+  //
+  public static async loginUserSuccesspass(
+    ctx: Context,
+    beartoken: string,
+    user_id: number
+  ) {
+    console.log("pass...");
+    // Access the user object and token from the Passport strategy
+
+    // Set cookies
+    await this.setCookieAndReturnToken(ctx, "beareltoken", beartoken);
+    await this.setCookieAndReturnToken(ctx, "userdata", user_id);
+  }
+
+  //
+  public static async isUserExistsAuth(email: string) {
+    try {
+      const user: User | null = await User.findOne({ where: { email: email } });
+
+      return user;
+    } catch (err: any) {
+      throw { status: 409, message: "User not Exists" };
+    }
+  }
 }
