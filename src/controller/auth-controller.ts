@@ -4,6 +4,7 @@ import { LoginUserDto } from "../dtos/request/user-login-dto";
 import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 import passport from "koa-passport";
+import { User } from "../entities/user-entity";
 
 export class AuthController {
   public static async login(ctx: Context) {
@@ -47,7 +48,17 @@ export class AuthController {
     }
   }
 
-  
+  public static async loginUserSuccesspass(ctx: Context) {
+    console.log("pass...");
+    // Access the user object and token from the Passport strategy
+    const user = ctx.state.user;
+    const token = ctx.state.authInfo;
+    const userid = user._id;
+    console.log(ctx.state.me);
+    // Set cookies
+    await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
+    await AuthServices.setCookieAndReturnToken(ctx, "userdata", userid);
+  }
 }
 /*
 

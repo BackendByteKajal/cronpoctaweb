@@ -27,4 +27,6 @@ export class PassportAuthController {
     ctx.logOut();
     ctx.redirect(CLIENT_URL);
   }
+  //
+  
 }
