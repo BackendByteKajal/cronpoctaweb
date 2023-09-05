@@ -71,13 +71,13 @@ export class AuthController {
       await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
       await AuthServices.setCookieAndReturnToken(ctx, "userdata", userId);
 
-     // ctx.redirect("https://eleven-doodles-march.loca.lt/home");
+      // ctx.redirect("https://eleven-doodles-march.loca.lt/home");
 
-      ctx.body = {
-        message: "Login successful...",
-        beareltoken: token,
-        user_id: userId,
-      };
+      //   ctx.body = {
+      //     message: "Login successful...",
+      //     beareltoken: token,
+      //     user_id: userId,
+      //   };
     } catch (error) {
       console.error(error);
       ctx.status = 500;
