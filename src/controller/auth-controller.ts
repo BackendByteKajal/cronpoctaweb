@@ -59,7 +59,35 @@ export class AuthController {
     await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
     await AuthServices.setCookieAndReturnToken(ctx, "userdata", userid);
   }
+
+
+  //
+ public static async handleGoogleCallback(ctx: Context) {
+  try {
+    
+    // Access the user object and token from the Passport strategy
+    const user= ctx.state.user;
+    const token = ctx.state.authInfo;
+    const userId = user._id;
+
+    await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
+    await AuthServices.setCookieAndReturnToken(ctx, "userdata", userId);
+
+    ctx.body = {
+      message: "Login successful...",
+      beareltoken: token,
+      user_id: userId,
+    };
+  } catch (error) {
+    console.error(error);
+    ctx.status = 500;
+    ctx.body = "Internal Server Error";
+  }
 }
+}
+
+
+
 /*
 
 import passport from "koa-passport";

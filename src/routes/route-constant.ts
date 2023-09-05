@@ -1,7 +1,8 @@
 export const AuthApiRoutes = {
   Login:"/login",
   AdminLogin:"/admin/login",
-  Googlelogin:"/googlelogin"
+  Googlelogin:"/google",
+  Callback:"/google/callback"
 };
 
 export const UserApiRoutes = {
