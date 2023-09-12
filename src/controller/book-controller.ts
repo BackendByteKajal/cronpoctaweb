@@ -3,8 +3,8 @@ import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingServices } from "../Services/booking-services";
 import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
-import { User } from "../entities/user-entity";
-import { isBefore, addHours, parseISO } from 'date-fns';
+//import { User } from "../entities/user-entity";
+import { isBefore, addHours, parseISO } from "date-fns";
 
 export class BookingController {
   /* public static async addBooking(ctx: Context) {
@@ -30,7 +30,7 @@ export class BookingController {
         { ...roomDetails, guests },
         ctx
       );
-
+      console.log("****", response);
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
       const status = err.status || 400;
@@ -67,7 +67,7 @@ export class BookingController {
     }
   }
 
- public static async activeBookings(ctx: Context) {
+  public static async activeBookings(ctx: Context) {
     try {
       // Get all bookings using the BookingServices.getAllBookings method
       const allBookings = await BookingServices.getAllBookings(ctx);
@@ -108,7 +108,7 @@ export class BookingController {
     }
   }
 
- /* public static async editBooking(ctx: Context) {
+  /* public static async editBooking(ctx: Context) {
     try {
       console.log("editbooking..");
       const id = ctx.params.id;
@@ -148,11 +148,6 @@ export class BookingController {
     }
   }*/
 
-
-
-
-
-
   public static async editBooking(ctx: Context) {
     try {
       console.log("editbooking..");
@@ -160,13 +155,12 @@ export class BookingController {
       console.log(id);
       const editedData = ctx.request.body as BookingRoomDto;
       console.log(editedData, "body");
-     
-
+    
       const editedResponse = await BookingServices.doEditBookings(
         Number(id),
-        editedData
+        editedData,ctx
       );
-     
+
       ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
     } catch (err: any) {
       console.log("error", err);
@@ -180,7 +174,7 @@ export class BookingController {
     try {
       const id = ctx.params.id;
       const deletedDataResponse = await BookingServices.doDeleteBooking(
-        Number(id)
+        Number(id),ctx
       );
 
       ctx.body = Utils.successResponse(
@@ -193,9 +187,6 @@ export class BookingController {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
-
-
-
 
   //delete booking
   /*public static async bookingdelete(ctx: Context) {

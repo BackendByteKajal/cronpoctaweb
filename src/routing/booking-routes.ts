@@ -9,12 +9,7 @@ import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 
 export class BookRoute {
   public static routes(router: Router) {
-    /* router.post(
-      BookingApiRoute.BookMeetRoom,
-      AuthenticateMiddleware.AuthenticateUser,
-      BookMeetRoomValidations.bookMeetRoom,
-      BookingController.addBooking
-    );*/
+   
     router.post(
       BookingApiRoute.BookMeetRoom,
       //AuthenticateMiddleware.AuthenticateUseracces,
@@ -25,7 +20,7 @@ export class BookRoute {
     );
     router.get(
       BookingApiRoute.Bookings,
-      //AuthenticateMiddleware.AuthenticateUser,
+     // AuthenticateMiddleware.AuthenticateUser,
       BookingController.activeBookings
     );
     router.get(

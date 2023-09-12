@@ -32,15 +32,15 @@ export class AccessValidation {
             loggedUserData.date
           );
           if (checkDate == -1) {
-            throw new Error("Please enter valid date");
+            throw new Error("Please enter valid date......");
           }
           const checkTiming = AccessValidation.editDeletePossibility(
             current_time,
             loggedUserData.startTime
           );
-          if (checkTiming == false && checkDate != 1) {
-            throw new Error("Please enter valid time");
-          }
+          // if (checkTiming == false && checkDate != 1) {
+          //   throw new Error("Please enter valid time#########");
+          // }
         }
         if (result == -1) {
           throw new Error("Cannot Edit or Delete booking now....");

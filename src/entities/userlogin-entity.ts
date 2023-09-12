@@ -93,7 +93,7 @@ export class UserLogin extends BaseEntity {
       .email(registerObj.email)
       .user_name(registerObj.userName)
       .last_name(registerObj.lastName)
-      .is_verified(registerObj.is_verified)
+      .is_verified(true)
       .authtoken(registerObj.authtoken)
       .googleid(registerObj.googleid)
       .build();

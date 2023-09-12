@@ -10,17 +10,18 @@ import { AuthServices } from "../Services/auth-services";
 import { AuthController } from "../controller/auth-controller";
 import { UserServices } from "../Services/user-services";
 import { UserLogin } from "../entities/userlogin-entity";
+import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
 dotenv.config({ path: ".env" });
-const GOOGLE_CLIENT_ID =
-  "1017054341407-11tc242vn4scpfqujfc90t341to7mffl.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";
+const GOOGLE_CLIENT_ID: any = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET: any = process.env.GOOGLE_CLIENT_SECRET;
+
 
 passportmodule.use(
   new GoogleStrategy(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://f9ad-27-107-28-2.ngrok-free.app/google/callback",
+      callbackURL: `${process.env.URL}/google/callback`,
     },
     async (
       accessToken: string,
@@ -36,17 +37,21 @@ passportmodule.use(
         authtoken: accessToken,
         is_varified: profile.emails[0].verified,
       };
-      const userdata: UserLogin | null = await UserServices.Registeruser(data);
-      console.log("data", data);
+      const userdata: UserLogin | any = await UserServices.Registeruser(data);
+      console.log(userdata, "userdata");
+      const user = UserLoginObject.convertToObj(userdata);
+      console.log("data", user);
       console.log(profile);
       const authemail = profile.emails[0].value;
-      const token = AuthServices.createToken(userdata);
-      AuthServices.redisCaching(userdata, token);
+      const token = AuthServices.createToken(user);
+      AuthServices.redisCaching(user, token);
 
-      done(null, userdata, token);
+      done(null, user, token);
     }
   )
 );
+
+
 
 // Passport serialization and deserialization
 passportmodule.serializeUser<any, any>((user, done: any) => {

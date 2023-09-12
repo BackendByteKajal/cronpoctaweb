@@ -146,52 +146,24 @@ export class AuthServices {
     console.log((error: any) => error);
   }
 
-  //
+  //set cookies
   public static async setCookieAndReturnToken(
     ctx: Context,
     name: string,
     value: any
   ) {
     const cookieOptions = {
+      domain: "https://old-hornets-smoke.loca.lt",
+      
+      httpOnly: false,
       secure: false,
       signed: true,
       overwrite: true,
     };
 
-    // Set the "meett" cookie
-    ctx.cookies.set(name, value, cookieOptions);
-
-    // Get the value of the "meett" cookie
-    const cookiestoken = ctx.cookies.get(name);
-
-    // Log the value of the "meett" cookie
-    // console.log(cookiestoken, "---------------");
-
+    const cookiestoken = ctx.cookies.set(name, value, cookieOptions);
     return cookiestoken;
   }
 
-  //
-  public static async loginUserSuccesspass(
-    ctx: Context,
-    beartoken: string,
-    user_id: number
-  ) {
-    console.log("pass...");
-    // Access the user object and token from the Passport strategy
 
-    // Set cookies
-    await this.setCookieAndReturnToken(ctx, "beareltoken", beartoken);
-    await this.setCookieAndReturnToken(ctx, "userdata", user_id);
-  }
-
-  //
-  public static async isUserExistsAuth(email: string) {
-    try {
-      const user: User | null = await User.findOne({ where: { email: email } });
-
-      return user;
-    } catch (err: any) {
-      throw { status: 409, message: "User not Exists" };
-    }
-  }
 }

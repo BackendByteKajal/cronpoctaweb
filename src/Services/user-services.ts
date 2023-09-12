@@ -47,18 +47,18 @@ export class UserServices {
           authtoken: userData.authtoken,
         }
       );
-    }
+      const user: UserLogin | null = await UserLogin.findOne({
+        where: { email: userData.email },
+      });
 
-    const user: UserLogin | null = await UserLogin.findOne({
-      where: { email: userData.email },
-    });
-    return user;
+      return user;
+    }
   }
 
   //
   public static async getAllUsers() {
     try {
-      const users = await User.find();
+      const users = await UserLogin.find();
       if (users.length == 0) {
         throw { status: 404, message: "No users found" };
       }
@@ -70,7 +70,8 @@ export class UserServices {
 
   public static async getAllGuests() {
     try {
-      const users = await User.find();
+      const users = await UserLogin.find();
+      console.log(users, "users.........");
       if (users.length == 0) {
         throw { status: 404, message: "No users found" };
       }
@@ -93,7 +94,9 @@ export class UserServices {
   }
   public static async isUserExistsUser(email: string): Promise<boolean> {
     console.log(email);
-    const user: UserLogin | null = await UserLogin.findOne({ where: { email: email } });
+    const user: UserLogin | null = await UserLogin.findOne({
+      where: { email: email },
+    });
     console.log(user, "user");
     if (user) {
       return false;

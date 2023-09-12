@@ -5,6 +5,8 @@ import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
 import passport from "koa-passport";
 import { User } from "../entities/user-entity";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
 
 export class AuthController {
   public static async login(ctx: Context) {
@@ -66,18 +68,20 @@ export class AuthController {
       // Access the user object and token from the Passport strategy
       const user = ctx.state.user;
       const token = ctx.state.authInfo;
-      const userId = user._id;
+      const userId = user.id;
+      console.log(ctx.session, "session...");
+      //const userId = ctx.session?.passport?.user?._id;
+      console.log(userId, "userid.....................");
+      console.log(token, "token..");
 
       await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
       await AuthServices.setCookieAndReturnToken(ctx, "userdata", userId);
 
-      // ctx.redirect("https://eleven-doodles-march.loca.lt/home");
+      // Build the URL with query parameters
+      const redirectURL = `${process.env.CLIENT_URL}/home?token=${token}&userId=${userId}`;
 
-      //   ctx.body = {
-      //     message: "Login successful...",
-      //     beareltoken: token,
-      //     user_id: userId,
-      //   };
+      // Redirect the user to the generated URL
+      ctx.redirect(redirectURL);
     } catch (error) {
       console.error(error);
       ctx.status = 500;
@@ -85,67 +89,3 @@ export class AuthController {
     }
   }
 }
-
-/*
-
-import passport from "koa-passport";
-
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const GithubStrategy = require("passport-github2").Strategy;
-const FacebookStrategy = require("passport-facebook").Strategy;
-
-const GOOGLE_CLIENT_ID = "your id";
-const GOOGLE_CLIENT_SECRET = "your id";
-const GITHUB_CLIENT_ID = "your id";
-const GITHUB_CLIENT_SECRET = "your id";
-const FACEBOOK_APP_ID = "your id";
-const FACEBOOK_APP_SECRET = "your id";
-
-// Configure passport strategies
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
-    },
-    function (accessToken: any, refreshToken: any, profile: any, done: any) {
-      done(null, profile);
-    }
-  )
-);
-
-passport.use(
-  new GithubStrategy(
-    {
-      clientID: GITHUB_CLIENT_ID,
-      clientSecret: GITHUB_CLIENT_SECRET,
-      callbackURL: "/auth/github/callback",
-    },
-    function (accessToken: any, refreshToken: any, profile: any, done: any) {
-      done(null, profile);
-    }
-  )
-);
-
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: FACEBOOK_APP_ID,
-      clientSecret: FACEBOOK_APP_SECRET,
-      callbackURL: "/auth/facebook/callback",
-    },
-    function (accessToken: any, refreshToken: any, profile: any, done: any) {
-      done(null, profile);
-    }
-  )
-);
-
-passport.serializeUser((user: any, done: any) => {
-  done(null, user);
-});
-
-passport.deserializeUser((user: any, done: any) => {
-  done(null, user);
-});
-*/

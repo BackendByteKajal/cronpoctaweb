@@ -3,7 +3,7 @@ import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
-import { User } from "../entities/user-entity";
+//import { User } from "../entities/user-entity";
 import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 import json from "koa-json";
 const moment = require("moment");
@@ -11,14 +11,23 @@ import { calendar_v3, google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { Not } from "typeorm";
 import { AccessValidation } from "../Validator/access-validation";
-
-const GOOGLE_CLIENT_ID =
-  "1017054341407-11tc242vn4scpfqujfc90t341to7mffl.apps.googleusercontent.com";
-
-const GOOGLE_CLIENT_SECRET = "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";
-const CALLBACK_URL = "https://f9ad-27-107-28-2.ngrok-free.app/google/callback";
-
+import { UserLogin } from "../entities/userlogin-entity";
+import { MeetRoomDto } from "../dtos/request/admin-meetroom-dto";
+import { AuthenticateMiddleware } from "../Middleware/Authentication";
+import { AuthServices } from "./auth-services";
+import { RedisCache } from "../connection/redis-connection";
+import { RedisSessionExpires } from "../enum/redis-expire-session";
+const apiKey = process.env.GOOGLE_API_KEY;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const CALLBACK_URL = `${process.env.URL}/google/callback`;
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+const calendar = google.calendar("v3"); // Create an instance of the Calendar service
+const oAuth2Client = new google.auth.OAuth2(
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  CALLBACK_URL
+);
 
 export class BookingServices {
   public static async bookMeetRoom(bookingDetails: any, ctx: Context) {
@@ -35,11 +44,7 @@ export class BookingServices {
         guests,
       } = bookingDetails;
       console.log(bookingDetails.guests, "booking detail");
-      //const guestsArray = bookingDetails.guests.map((item: { guests: any; }) => item);
-      //console.log(guestsArray,"guestsArray");
-
-      //const parsedGuests = JSON.parse(bookingDetails.guests);
-      //console.log(parsedGuests);
+      
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -48,25 +53,31 @@ export class BookingServices {
         endTime
       );
       console.log(result);
+      const userid = ctx.state.me.id;
+      console.log(userid, "userid");
       if (result) {
-        // const guestsArray = guests.map((item: { guests: string; }) => item.guests);
-        //console.log(ctx.state.me._id, "id");
-        //const guestsString = guestsArray.join(', ');
-        //console.log(guestsString);
-        // const bookRoomData = {...bookingDetails,userId:ctx.state.me.id,guestsArray }
+        
         const bookRoomData = {
           ...bookingDetails,
 
-          userId: 2,
+          userId: userid,
         };
         console.log("join");
         const data = Booking.BookingRoomObj(bookRoomData);
         console.log(data, "dta");
         const response = await Booking.create(data).save();
         console.log(response);
+
+        
         const responseObj = BookingResponseObj.convertBookingToObj(response);
-        console.log(responseObj, "...");
-        const result = await eventbook(data, ctx);
+        console.log(responseObj, ".........................");
+        const result = await calendarnotification(data, ctx);
+
+        const eventId = result.response?.id; // Event ID
+        
+        const bid = responseObj.id; // Event ID
+        console.log("bid:", bid);
+        redisCaching(eventId, bid);
 
         if (result.success) {
           console.log("notification done");
@@ -75,48 +86,9 @@ export class BookingServices {
         } else {
           console.log("event fail");
         }
-        // return responseObj;
+        //return responseObj;
       }
     } catch (err: any) {
-      throw err;
-    }
-  }
-
-  //calender
-
-  public static async createCalendarEvent(
-    title: string,
-    guestsArray: string[],
-    date: string,
-    startTime: string,
-    endTime: string
-  ) {
-    try {
-      console.log("calender function.....");
-      const event: calendar_v3.Schema$Event = {
-        summary: title,
-        description: `Meeting with ${guestsArray.join(", ")}`,
-        start: {
-          dateTime: `${date}T${startTime}`,
-          timeZone: "Asia/Kolkata", // desired timezone (e.g., 'America/New_York')
-        },
-        end: {
-          dateTime: `${date}T${endTime}`,
-          timeZone: "Asia/Kolkata", //  desired timezone (e.g., 'America/New_York')
-        },
-        attendees: guestsArray.map((guest: string) => ({ email: guest })),
-      };
-      console.log(event.attendees, "atten");
-      console.log(event.start?.dateTime);
-      const response = await calendar.events.insert({
-        calendarId: "primary", // Use 'primary' for the user's primary calendar
-        requestBody: event, // Use requestBody to pass the event object
-        sendNotifications: true,
-      });
-      console.log("event creates..");
-      console.log("Event created: %s", response.data.htmlLink);
-    } catch (err: any) {
-      console.log(err);
       throw err;
     }
   }
@@ -229,14 +201,31 @@ export class BookingServices {
     }
   }
 
-  public static async doDeleteBooking(bookingId: number) {
+ 
+  public static async doDeleteBooking(bookingId: number, ctx: Context) {
     try {
-      const bookingData = await Booking.findOneBy({ id: bookingId });
-      if (bookingData) {
-        await Booking.delete(bookingId);
+      // Get the event ID associated with the booking from Redis or your cache
+      const data = await AuthenticateMiddleware.getrediseventid(bookingId);
 
-        return BookingResponseObj.convertBookingToObj(bookingData);
+      const eventid = JSON.parse(data);
+      console.log(eventid, "eventid");
+      console.log(typeof eventid, "eventid  1");
+
+      // Retrieve the booking data from your database
+      const bookingData = await Booking.findOneBy({ id: bookingId });
+
+      if (bookingData) {
+        // Delete the event from Google Calendar using the event ID
+        const success = await deleteCalendarEvent(eventid, ctx);
+
+        // If the event is successfully deleted from Google Calendar, delete it from your database
+        if (success) {
+          await Booking.delete(bookingId);
+          return BookingResponseObj.convertBookingToObj(bookingData);
+        }
       }
+
+      // If the booking or event doesn't exist, throw an error
       throw { status: 404, message: "Booking with this ID not found" };
     } catch (err: any) {
       throw err;
@@ -271,7 +260,7 @@ export class BookingServices {
   }
 
   public static async bookingDelete(bookid: any): Promise<any> {
-    const booking = await User.delete({ id: bookid });
+    const booking = await UserLogin.delete({ id: bookid });
     //const userData1: User = User.fromRegisterObj(userData);
     return booking;
   }
@@ -373,7 +362,7 @@ export class BookingServices {
       }
       throw { status: 400, message: "Meeting Room is already occupied" };
     } catch (err: any) {
-      console.log(err, "errrrrrrrrrrrr");
+      
       throw err;
     }
   }
@@ -382,7 +371,7 @@ export class BookingServices {
       toUpdateArray.map(async (obj: any) => {
         const newObj = { ...obj };
 
-        const userNamedata = await User.findOneBy({ id: obj.userId });
+        const userNamedata = await UserLogin.findOneBy({ id: obj.userId });
         const meetRoomData = await MeetingRoom.findOneBy({
           id: obj.meetRoomId,
         });
@@ -447,20 +436,22 @@ export class BookingServices {
 
   public static async doEditBookings(
     bookingId: number,
-    bookingDetails: BookingRoomDto
+    bookingDetails: BookingRoomDto,
+    ctx: Context
   ) {
     try {
-      console.log(bookingId);
-      console.log(bookingDetails);
-      let booking: any = await Booking.findOneBy({ id: bookingId });
+      const redisvalue = await AuthenticateMiddleware.getrediseventid(
+        bookingId
+      );
+
+      const eventid = JSON.parse(redisvalue);
+      console.log(eventid, "eventid");
+      console.log(typeof eventid, "eventid  1");
+
+      let booking: Booking | null = await Booking.findOneBy({ id: bookingId });
       const current_time = AccessValidation.getCurrentTime();
       console.log("currenttime....", current_time);
-      /* let time = BookMeetRoomValidations.timeValidationEdit(
-         booking.start_time,
-         booking.end_time,
-         current_time.toString(),
-         booking.date
-       );*/
+
       console.log(booking, "bookin");
       if (!booking) {
         throw { status: 404, message: "Booking with this ID not found" };
@@ -488,8 +479,14 @@ export class BookingServices {
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
-        const room_name = await this.MeetRoomName(editedData.meetRoomId);
-        console.log(editedData);
+
+        const editevent = await updateCalendarEventWithAttendees(
+          eventid,
+          editedData,
+          ctx
+        );
+        const room_name = await this.MeetRoomName(bookingDetails.meetRoomId);
+        console.log(editedData.meetRoomId, "meetid");
         return { ...editedData, roomname: room_name };
         // return editedData;
       }
@@ -514,24 +511,15 @@ export class BookingServices {
   }
 }
 
-//
-
-const calendar = google.calendar("v3"); // Create an instance of the Calendar service
+//create calender notification
 
 async function calendarnotification(requestData: any, ctx: Context) {
   console.log(ctx.state.me, "me....");
-  const token = ctx.state.me._authtoken;
+  const token = ctx.state.me.authtoken;
   console.log(token, "authtoken");
-  const token1 = ctx.cookies.get("meett");
+  console.log(requestData, "requestdata");
 
-  console.log("cockkies", token1);
-
-  console.log("calender");
-  const oAuth2Client = new google.auth.OAuth2(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    CALLBACK_URL
-  );
+  
 
   oAuth2Client.setCredentials({
     access_token: token,
@@ -552,6 +540,11 @@ async function calendarnotification(requestData: any, ctx: Context) {
   console.log(eventStartTime, "starttime");
   const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
 
+  const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
+
+  const roomName = meetroom?.room_name;
+  console.log(roomName, "roomname");
+
   try {
     console.log("try");
     const response = await calendar.events.insert({
@@ -559,7 +552,8 @@ async function calendarnotification(requestData: any, ctx: Context) {
       auth: oAuth2Client,
       requestBody: {
         summary: requestData.title,
-        description: requestData.description,
+
+        description: `meetroomname:${roomName} meetdescription:${requestData.description}`,
 
         start: {
           dateTime: eventStartTime,
@@ -573,14 +567,15 @@ async function calendarnotification(requestData: any, ctx: Context) {
       },
     });
 
+    const eventId = response.data; // Event ID
+    console.log("data", eventId);
+
     console.log("Event created:", response.data);
     return { success: true, response: response.data };
     console.log("Event created:", response.data);
   } catch (error) {
     console.error("Error creating event:", error);
     ctx.status = 500;
-    //ctx.body = { msg: "Error creating event" };
-
     return { success: false, error: error };
   }
 }
@@ -603,21 +598,136 @@ function convertToISODate(dateString: string, timeString: string): string {
   const dateTime = new Date(year, month - 1, day, hour, minute);
   return dateTime.toISOString();
 }
-//
-async function eventbook(requestData: Booking, ctx: Context) {
-  // const eventStartTime = convertToISODate(
-  //   requestData.date,
-  //   requestData.start_time
-  // );
-  // const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
 
+function redisCaching(value: any, key: number) {
+  const redisObj = RedisCache.connect();
+  redisObj.set(String(key), JSON.stringify(value)); // Convert key to string
+}
+
+// Function to delete a calendar event
+async function deleteCalendarEvent(eventiid: string, ctx: Context) {
   try {
-    await calendarnotification(requestData, ctx);
+    const accessToken = ctx.state.me.authtoken;
+    console.log("apikey", typeof apiKey);
 
-    //console.log("Event created:", response.data);
-    return { success: true, msg: "Event created successfully" };
+    console.log("calender");
+    
+
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+    });
+
+    oAuth2Client.credentials.access_token = accessToken;
+
+    const jsonString = JSON.stringify(eventiid);
+
+    console.log(jsonString, "evenidstring"); // This will output a JSON-formatted string
+    console.log(typeof jsonString);
+    const eventid = JSON.parse(jsonString);
+
+    console.log(eventid, "evenid"); // This will output the string without double quotes
+    console.log(typeof eventid);
+    const response = await calendar.events.delete({
+      calendarId: "primary",
+      eventId: eventid,
+      auth: oAuth2Client,
+      key: apiKey,
+    });
+
+    console.log("Event deleted from Google Calendar:", eventid);
+    return true; // Event deleted successfully
   } catch (error) {
-    console.error("Error creating event:", error);
-    return { success: false, msg: "Error creating event" };
+    console.error("Error:", error);
+    // Handle the error as needed in your application
+    return false; // Event deletion failed
+  }
+}
+// edit calender event
+
+async function updateCalendarEventWithAttendees(
+  eventid: string,
+  editedData: any,
+  ctx: Context
+) {
+  console.log(eventid), console.log(editedData);
+  console.log(typeof eventid);
+  const accessToken = ctx.state.me.authtoken;
+  console.log("accesstoken", accessToken);
+
+  console.log("calender");
+  
+
+  oAuth2Client.setCredentials({
+    access_token: accessToken,
+  });
+
+  oAuth2Client.credentials.access_token = accessToken;
+  try {
+    const event = await calendar.events.get({
+      calendarId: "primary",
+      eventId: eventid,
+      auth: oAuth2Client,
+      key: apiKey,
+    });
+
+    const dataemail = event.data.attendees || []; // Ensure attendees is an array
+
+    // Convert the 'dataemail' array to 'existingAttendees' format
+    const existingAttendees = dataemail
+      .filter((attendee) => attendee.email)
+      .map((attendee) => ({ email: attendee.email }));
+
+    console.log(existingAttendees);
+
+    const startdatetime = convertToISODate(
+      editedData.date,
+      editedData.startTime
+    );
+
+    const enddatetime = convertToISODate(editedData.date, editedData.endTime);
+
+    //const newAttendees: never[]= [];
+
+    const newAttendees = editedData.guests.map((guest: { guests: any }) => ({
+      email: guest.guests,
+    }));
+    console.log("GuestsEmail", newAttendees);
+    const meetroom = await MeetingRoom.findOneBy({
+      id: editedData.meetRoomId,
+    });
+    console.log(
+      editedData.meetRoomId,
+      "......................................"
+    );
+    const roomName = meetroom?.room_name;
+    console.log(roomName, "roomname........................................");
+
+    const updateevevent = {
+      summary: editedData.title,
+      description: `MeetroomName:${roomName} Description:${editedData.description}`,
+      start: {
+        dateTime: startdatetime,
+        timeZone: "Asia/Kolkata",
+      },
+      end: {
+        dateTime: enddatetime,
+        timeZone: "Asia/Kolkata",
+      },
+      attendees: newAttendees, // Update attendees here
+      // Add or modify any other event properties as needed
+    };
+
+    const response = await calendar.events.patch({
+      calendarId: "primary",
+      eventId: eventid,
+      auth: oAuth2Client,
+      requestBody: updateevevent,
+    });
+
+    console.log("update event");
+    return true;
+  } catch (error) {
+    console.error("Error updating event:", error);
+    throw error;
   }
 }

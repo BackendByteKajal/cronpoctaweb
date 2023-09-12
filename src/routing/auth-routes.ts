@@ -34,5 +34,7 @@ export class AuthRoute {
       passport.authenticate("google"),
       AuthController.handleGoogleCallback
     );
+
+   
   }
 }

@@ -8,6 +8,7 @@ import { AuthServices } from "../Services/auth-services";
 import { UpdateUserDto } from "../dtos/request/user-update-dto";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
 import { LoginUserDto } from "../dtos/request/user-login-dto";
+import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
 
 export class UserController {
   public static async userRegister(ctx: Context) {
@@ -31,7 +32,7 @@ export class UserController {
     try {
       const users = await UserServices.getAllUsers();
       const allUsers = users.map((ele) => {
-        return UserObject.convertToObj(ele);
+        return UserLoginObject.convertToObj(ele);
       });
       ctx.body = Utils.successResponse(Message.AllUsers, allUsers);
     } catch (err: any) {
@@ -44,7 +45,7 @@ export class UserController {
     try {
       const users = await UserServices.getAllGuests();
       const allUsers = users.map((ele) => {
-        return UserObject.convertToObj1(ele);
+        return UserLoginObject.convertToObj1(ele);
       });
 
       ctx.body = Utils.successResponse(Message.AllGuests, allUsers);
