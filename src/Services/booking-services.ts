@@ -540,6 +540,10 @@ async function calendarnotification(requestData: any, ctx: Context) {
     email: guest.guests,
   }));
   console.log("GuestsEmail", GuestsEmail);
+  const orgemail = ctx.state.me.email;
+  console.log("orgemail***********", orgemail);
+  const authemail = [{ email: orgemail }];
+  console.log(authemail, "authemail%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
   console.log(requestData.start_time, requestData.date, "time date");
   const eventStartTime = convertToISODate(
     requestData.date,
@@ -558,6 +562,8 @@ async function calendarnotification(requestData: any, ctx: Context) {
     const response = await calendar.events.insert({
       calendarId: "primary",
       auth: oAuth2Client,
+      conferenceDataVersion: 1,
+      key: apiKey,
       requestBody: {
         summary: requestData.title,
 
@@ -572,8 +578,17 @@ async function calendarnotification(requestData: any, ctx: Context) {
           timeZone: "Asia/Kolkata",
         },
         attendees: GuestsEmail,
+        conferenceData: {
+          createRequest: {
+            requestId: "kajal",
+          },
+        },
       },
     });
+    // Construct the Google Meet link
+    const googleMeetLink: any = response.data.hangoutLink;
+    console.log(googleMeetLink, "google meet link");
+
     const calenderurl = response.data.htmlLink;
 
     const Email = ctx.state.me.email;
@@ -586,11 +601,13 @@ async function calendarnotification(requestData: any, ctx: Context) {
           token,
           Email,
           calenderurl,
-          roomName
+          roomName,
+          googleMeetLink
         );
       }
     }
-    console.log("Event created:", response.data);
+
+    console.log("Event created:", response);
     return { success: true, response: response.data };
     console.log("Event created:", response.data);
   } catch (error) {
@@ -712,6 +729,8 @@ async function updateCalendarEventWithAttendees(
 
     const updateevevent = {
       summary: editedData.title,
+      conferenceDataVersion: 1,
+      key: apiKey,
       description: `MeetroomName:${roomName} Description:${editedData.description}`,
       start: {
         dateTime: startdatetime,
@@ -723,6 +742,11 @@ async function updateCalendarEventWithAttendees(
       },
       attendees: newAttendees, // Update attendees here
       // Add or modify any other event properties as needed
+      conferenceData: {
+        createRequest: {
+          requestId: "kajal",
+        },
+      },
     };
 
     const response = await calendar.events.patch({
@@ -735,6 +759,12 @@ async function updateCalendarEventWithAttendees(
 
     const Email = ctx.state.me.email;
     console.log(Email, "email");
+    // Construct the Google Meet link
+    const googleMeetLink: any = response.data.hangoutLink;
+    console.log(
+      googleMeetLink,
+      "google meet link********************************"
+    );
     // Send booking confirmation email
     if (calenderurl) {
       if (roomName) {
@@ -743,7 +773,8 @@ async function updateCalendarEventWithAttendees(
           accessToken,
           Email,
           calenderurl,
-          roomName
+          roomName,
+          googleMeetLink
         );
       }
     }
@@ -762,7 +793,8 @@ async function sendEmail(
   access_token: string,
   Email: string,
   calenderurl: string,
-  meetroomname: string
+  meetroomname: string,
+  googleMeetLink: string
 ) {
   try {
     oAuth2Client.setCredentials({
@@ -795,7 +827,7 @@ async function sendEmail(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl}`,
+      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl} googlemeetlink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
@@ -863,8 +895,10 @@ async function sendEmailEdit(
   access_token: string,
   Email: string,
   calenderurl: string,
-  meetroomname: string
+  meetroomname: string,
+  googlemeetlink: string
 ) {
+  console.log(bookingDetails, "bookingDetails");
   try {
     oAuth2Client.setCredentials({
       access_token: access_token,
@@ -896,7 +930,7 @@ async function sendEmailEdit(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `Your  Meeting is Edited ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl}`,
+      text: `Your  Meeting is Edited ${bookingDetails.date} from ${bookingDetails.startTime} to ${bookingDetails.endTime}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl} googlemeetlink:${googlemeetlink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
