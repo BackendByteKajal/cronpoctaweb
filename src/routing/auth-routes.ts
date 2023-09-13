@@ -25,6 +25,7 @@ export class AuthRoute {
           "email",
           "openid",
           "https://www.googleapis.com/auth/calendar",
+          "https://mail.google.com",
         ],
       })
     );
@@ -34,7 +35,5 @@ export class AuthRoute {
       passport.authenticate("google"),
       AuthController.handleGoogleCallback
     );
-
-   
   }
 }

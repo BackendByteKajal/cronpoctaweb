@@ -17,6 +17,7 @@ import { AuthenticateMiddleware } from "../Middleware/Authentication";
 import { AuthServices } from "./auth-services";
 import { RedisCache } from "../connection/redis-connection";
 import { RedisSessionExpires } from "../enum/redis-expire-session";
+import nodemailer from "nodemailer";
 const apiKey = process.env.GOOGLE_API_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -44,7 +45,7 @@ export class BookingServices {
         guests,
       } = bookingDetails;
       console.log(bookingDetails.guests, "booking detail");
-      
+
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
         meetRoomId,
@@ -56,7 +57,6 @@ export class BookingServices {
       const userid = ctx.state.me.id;
       console.log(userid, "userid");
       if (result) {
-        
         const bookRoomData = {
           ...bookingDetails,
 
@@ -68,13 +68,12 @@ export class BookingServices {
         const response = await Booking.create(data).save();
         console.log(response);
 
-        
         const responseObj = BookingResponseObj.convertBookingToObj(response);
         console.log(responseObj, ".........................");
         const result = await calendarnotification(data, ctx);
 
         const eventId = result.response?.id; // Event ID
-        
+
         const bid = responseObj.id; // Event ID
         console.log("bid:", bid);
         redisCaching(eventId, bid);
@@ -201,7 +200,6 @@ export class BookingServices {
     }
   }
 
- 
   public static async doDeleteBooking(bookingId: number, ctx: Context) {
     try {
       // Get the event ID associated with the booking from Redis or your cache
@@ -221,6 +219,19 @@ export class BookingServices {
         // If the event is successfully deleted from Google Calendar, delete it from your database
         if (success) {
           await Booking.delete(bookingId);
+          //
+          const Email = ctx.state.me.email;
+          console.log(Email, "email");
+          const accesstoken = ctx.state.me.authtoken;
+          console.log(Email, "email");
+          // Send booking confirmation email
+
+          const emailSent = await sendEmaildelete(
+            bookingData,
+            accesstoken,
+            Email
+          );
+          //
           return BookingResponseObj.convertBookingToObj(bookingData);
         }
       }
@@ -362,7 +373,6 @@ export class BookingServices {
       }
       throw { status: 400, message: "Meeting Room is already occupied" };
     } catch (err: any) {
-      
       throw err;
     }
   }
@@ -519,8 +529,6 @@ async function calendarnotification(requestData: any, ctx: Context) {
   console.log(token, "authtoken");
   console.log(requestData, "requestdata");
 
-  
-
   oAuth2Client.setCredentials({
     access_token: token,
   });
@@ -566,10 +574,22 @@ async function calendarnotification(requestData: any, ctx: Context) {
         attendees: GuestsEmail,
       },
     });
+    const calenderurl = response.data.htmlLink;
 
-    const eventId = response.data; // Event ID
-    console.log("data", eventId);
-
+    const Email = ctx.state.me.email;
+    console.log(Email, "email");
+    // Send booking confirmation email
+    if (calenderurl) {
+      if (roomName) {
+        const emailSent = await sendEmail(
+          requestData,
+          token,
+          Email,
+          calenderurl,
+          roomName
+        );
+      }
+    }
     console.log("Event created:", response.data);
     return { success: true, response: response.data };
     console.log("Event created:", response.data);
@@ -611,7 +631,6 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
     console.log("apikey", typeof apiKey);
 
     console.log("calender");
-    
 
     oAuth2Client.setCredentials({
       access_token: accessToken,
@@ -621,12 +640,8 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
 
     const jsonString = JSON.stringify(eventiid);
 
-    console.log(jsonString, "evenidstring"); // This will output a JSON-formatted string
-    console.log(typeof jsonString);
     const eventid = JSON.parse(jsonString);
 
-    console.log(eventid, "evenid"); // This will output the string without double quotes
-    console.log(typeof eventid);
     const response = await calendar.events.delete({
       calendarId: "primary",
       eventId: eventid,
@@ -655,7 +670,6 @@ async function updateCalendarEventWithAttendees(
   console.log("accesstoken", accessToken);
 
   console.log("calender");
-  
 
   oAuth2Client.setCredentials({
     access_token: accessToken,
@@ -686,8 +700,6 @@ async function updateCalendarEventWithAttendees(
 
     const enddatetime = convertToISODate(editedData.date, editedData.endTime);
 
-    //const newAttendees: never[]= [];
-
     const newAttendees = editedData.guests.map((guest: { guests: any }) => ({
       email: guest.guests,
     }));
@@ -695,12 +707,8 @@ async function updateCalendarEventWithAttendees(
     const meetroom = await MeetingRoom.findOneBy({
       id: editedData.meetRoomId,
     });
-    console.log(
-      editedData.meetRoomId,
-      "......................................"
-    );
+
     const roomName = meetroom?.room_name;
-    console.log(roomName, "roomname........................................");
 
     const updateevevent = {
       summary: editedData.title,
@@ -723,11 +731,180 @@ async function updateCalendarEventWithAttendees(
       auth: oAuth2Client,
       requestBody: updateevevent,
     });
+    const calenderurl = response.data.htmlLink;
 
+    const Email = ctx.state.me.email;
+    console.log(Email, "email");
+    // Send booking confirmation email
+    if (calenderurl) {
+      if (roomName) {
+        const emailSent = await sendEmailEdit(
+          editedData,
+          accessToken,
+          Email,
+          calenderurl,
+          roomName
+        );
+      }
+    }
     console.log("update event");
     return true;
   } catch (error) {
     console.error("Error updating event:", error);
+    throw error;
+  }
+}
+
+//send mail for meeting set
+
+async function sendEmail(
+  bookingDetails: any,
+  access_token: string,
+  Email: string,
+  calenderurl: string,
+  meetroomname: string
+) {
+  try {
+    oAuth2Client.setCredentials({
+      access_token: access_token,
+    });
+
+    oAuth2Client.credentials.access_token = access_token;
+    // Create a Nodemailer transporter with OAuth2 authentication
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Or your email provider
+      auth: {
+        type: "OAuth2",
+        user: Email, // Your email address
+        clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
+        accessToken: access_token, // Access token passed as an argument
+      },
+    });
+
+    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+      email: guest.guests,
+    }));
+
+    const emailAddresses: string[] = GuestsEmail.map(
+      (guest: { email: any }) => guest.email
+    );
+
+    // Compose the email
+    const mailOptions = {
+      from: Email, // Your email address
+      to: emailAddresses, // Recipient's email addresses
+      subject: `Meeting Invitation: ${bookingDetails.title}`,
+      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl}`,
+      // html: "<h1>Meeting set</h1>",
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+}
+//send mail for delete event
+async function sendEmaildelete(
+  bookingDetails: any,
+  access_token: string,
+  Email: string
+) {
+  try {
+    oAuth2Client.setCredentials({
+      access_token: access_token,
+    });
+    console.log("bookingdeat*********", bookingDetails);
+    oAuth2Client.credentials.access_token = access_token;
+    // Create a Nodemailer transporter with OAuth2 authentication
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Or your email provider
+      auth: {
+        type: "OAuth2",
+        user: Email, // Your email address
+        clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
+        accessToken: access_token, // Access token passed as an argument
+      },
+    });
+
+    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+      email: guest.guests,
+    }));
+
+    const emailAddresses: string[] = GuestsEmail.map(
+      (guest: { email: any }) => guest.email
+    );
+
+    // Compose the email
+    const mailOptions = {
+      from: Email, // Your email address
+      to: emailAddresses, // Recipient's email addresses
+      subject: `Meeting cancelled : ${bookingDetails.title}`,
+      text: `Meeting is cancelled ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description} `,
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+}
+
+//send mail for edit meeting
+
+async function sendEmailEdit(
+  bookingDetails: any,
+  access_token: string,
+  Email: string,
+  calenderurl: string,
+  meetroomname: string
+) {
+  try {
+    oAuth2Client.setCredentials({
+      access_token: access_token,
+    });
+
+    oAuth2Client.credentials.access_token = access_token;
+    // Create a Nodemailer transporter with OAuth2 authentication
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Or your email provider
+      auth: {
+        type: "OAuth2",
+        user: Email, // Your email address
+        clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
+        accessToken: access_token, // Access token passed as an argument
+      },
+    });
+
+    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+      email: guest.guests,
+    }));
+
+    const emailAddresses: string[] = GuestsEmail.map(
+      (guest: { email: any }) => guest.email
+    );
+
+    // Compose the email
+    const mailOptions = {
+      from: Email, // Your email address
+      to: emailAddresses, // Recipient's email addresses
+      subject: `Meeting Invitation: ${bookingDetails.title}`,
+      text: `Your  Meeting is Edited ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl}`,
+      // html: "<h1>Meeting set</h1>",
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+  } catch (error) {
+    console.error("Error sending email:", error);
     throw error;
   }
 }
