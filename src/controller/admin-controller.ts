@@ -21,18 +21,7 @@ import { ControlTower } from "aws-sdk";
 import dotenv from "dotenv";
 
 export class AdminController {
-  /*public static async AddMeetRoom(ctx: Context) {
-    try {
-        const data = ctx.request.body as MeetRoomDto;
-        const result = await AdminServices.addMeetRoom(data);
-        ctx.body = Utils.successResponse(Message.MeetRoomAdded,result);
-
-    } catch (err: any) {
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status,err.message)
-    }
-  }*/
+ 
 
   public static async AddMeetRoom(ctx: Context) {
     try {
@@ -42,31 +31,18 @@ export class AdminController {
         meetRoomName: meetRoomName,
         capacity: capacity,
       };
-      console.log(obj);
-      const file = ctx.request.files;
-      console.log(file, "file");
-
-      if (!ctx.request.files) {
-        var imgurl =
-          "https://res.cloudinary.com/dveklqhi8/image/upload/v1689921891/qobugym5pwtvxxge1k2r.png";
-      } else {
-        console.log("path....");
+      
         const file = ctx.request.files;
         console.log(file, "file...");
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
         console.log(data, "data...");
         const imgpath = data.imageurl.filepath;
-
-        console.log(imgpath);
         var imgurl = await AdminServices.upload(data, imgpath); //upload call
         console.log(imgurl, "imgurl...........");
-      }
-
-      const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
-      console.log("mapper", meetingRoomData);
-      const result = await AdminServices.addMeetRoom(meetingRoomData);
-      ctx.body = Utils.successResponse(Message.MeetRoomAdded, result);
+        const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
+        const result = await AdminServices.addMeetRoom(meetingRoomData);
+        ctx.body = Utils.successResponse(Message.MeetRoomAdded, result);
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
@@ -92,23 +68,8 @@ export class AdminController {
     }
   }
 
-  /* public static async editMeetRoom(ctx: Context) {
-    try {
-      const param = ctx.params.id;
-      const dataToEdit = ctx.request.body as MeetRoomDto;
-      const result = await AdminServices.doEditMeetRoom(
-        Number(param),
-        dataToEdit
-      );
+ 
 
-      ctx.body = Utils.successResponse("Meeting Data Updated", result);
-    } catch (err: any) {
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status, err.message);
-    }
-  }
-*/
   public static async editMeetRoom(ctx: Context) {
     try {
       const param = ctx.params.id;
@@ -130,8 +91,7 @@ export class AdminController {
     try {
       const param = ctx.params.id;
       const roomData = await MeetingRoom.findOneBy({ id: param });
-      console.log("roomData", roomData);
-
+      
       if (!roomData) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
@@ -143,35 +103,26 @@ export class AdminController {
         meetRoomName: meetRoomName,
         capacity: capacity,
       };
-      console.log(obj);
+      
       const file = ctx.request.files;
       if (!file) {
         throw new Error("pass image..");
       }
-      console.log(file, "file");
-
-      //const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
-
-      console.log(obj);
-      // const file = ctx.request.files;
-      console.log(file, "file");
+      
       //upload call
       if (!ctx.request.files?.imageurl) {
         var imgurl = image;
       } else {
-        console.log("path....");
+        
         const file = ctx.request.files;
         console.log(file, "file...");
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
-        console.log(data, "data...");
         const imgpath = data.imageurl.filepath;
-
-        console.log(imgpath);
-        var imgurl = await AdminServices.upload(data, imgpath); //upload call
-        console.log(imgurl, "imgurl...........");
+       var imgurl = await AdminServices.upload(data, imgpath); //upload call
+        
       }
-      console.log(imgurl, "imgurl...........");
+    
 
       const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
       console.log("mapper", meetingRoomData);

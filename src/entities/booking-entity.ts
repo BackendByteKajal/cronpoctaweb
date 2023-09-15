@@ -5,8 +5,7 @@ import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { type } from "os";
 
 @Entity()
-export class Booking extends BaseEntity{
-
+export class Booking extends BaseEntity {
   private _id: number;
   private _user_id: number;
   private _meetroom_id: number;
@@ -17,6 +16,7 @@ export class Booking extends BaseEntity{
   private _status: string;
   private _guests: string[];
   private _description: string;
+  private _eventid: string;
 
   @PrimaryGeneratedColumn()
   public get id(): number {
@@ -58,7 +58,7 @@ export class Booking extends BaseEntity{
     this._date = date;
   }
 
-  @Column( )
+  @Column()
   public get start_time(): string {
     return this._start_time;
   }
@@ -74,7 +74,7 @@ export class Booking extends BaseEntity{
     this._end_time = end_time;
   }
 
-  @Column({default: "Inactive"})
+  @Column({ default: "Inactive" })
   public get status(): string {
     return this._status;
   }
@@ -82,7 +82,7 @@ export class Booking extends BaseEntity{
     this._status = status;
   }
 
- /* @Column({nullable:true})
+  /* @Column({nullable:true})
   public get guests(): string {
     return this._guests;
   }
@@ -97,13 +97,20 @@ export class Booking extends BaseEntity{
     this._guests = guests;
   }
 
-
-  @Column({nullable:true})
+  @Column({ nullable: true })
   public get description(): string {
     return this._description;
   }
   public set description(description: string) {
     this._description = description;
+  }
+
+  @Column({ nullable: true })
+  public get eventid(): string {
+    return this._eventid;
+  }
+  public set eventid(eventid: string) {
+    this._eventid = eventid;
   }
 
   @CreateDateColumn()
@@ -126,6 +133,8 @@ export class Booking extends BaseEntity{
       .status(bookingObj.status)
       .guests(bookingObj.guests)
       .description(bookingObj.description)
+      //.eventid(bookingObj.evenid)
+      
       .build();
 
     return obj;

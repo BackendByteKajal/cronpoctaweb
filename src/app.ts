@@ -11,7 +11,7 @@ const swaggerUI = require("swagger-ui-koa");
 const YAML = require("yamljs");
 
 const swaggerJSDocs = YAML.load(
-  "/home/cepl/Desktop/meeting clone1/meeting-room-booking-system-backend-api/src/api.yml"
+  "/home/cepl/Desktop/meet5/meeting-room-booking-system-backend-api/src/api.yml"
 );
 
 const app = new Koa();
@@ -26,15 +26,16 @@ app.use(bodyParser());
 app.use(json());
 app.use(cors());
 // app.use(
-// //   cors({
-// //     origin: "https://f294-27-107-28-2.ngrok-free.app",
-// //     methods: "GET,POST,PUT,DELETE,PATCH",
-// //     credentials: true,
-// //   })
-// // );
+//   cors({
+//     origin: "https://e13f-27-107-28-2.ngrok-free.app",
+//     methods: "GET,POST,PUT,DELETE,PATCH",
+//     credentials: true,
+//   })
+// );
 app.use(session(app)); // Use koa-session
 app.use(passportmodule.initialize());
 app.use(passportmodule.session());
+
 app.use(
   session(
     {
@@ -47,7 +48,7 @@ app.use(
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port = 3052;
+const port = 3054;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });

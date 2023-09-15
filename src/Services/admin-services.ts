@@ -11,19 +11,11 @@ import app from "../app";
 import cloudinary from "cloudinary";
 import { CostExplorer } from "aws-sdk";
 import dotenv from "dotenv";
+import moment from "moment";
 dotenv.config({ path: ".env" });
 
 export class AdminServices {
-  /*public static async addMeetRoom(data: MeetRoomDto){
-    try {
-      const roomData = MeetingRoom.fromAdminMeetRoom(data);
-      const result = await MeetingRoom.create(roomData).save();
-      const response = MeetRoomObject.convertMeetRoomToObj(result);
-      return response;
-    } catch (err: any) {
-      throw err;
-    }
-  }*/
+  
   public static async addMeetRoom(data: any) {
     try {
       console.log("addmettservice");
@@ -49,26 +41,7 @@ export class AdminServices {
     }
   }
 
-  /* public static async doEditMeetRoom(meetRoomId:number,roomDetails:MeetRoomDto){
-    try{
-      const meetRoom:any = await MeetingRoom.findOneBy({id:meetRoomId});
-      if(!meetRoom){
-        throw { status: 404, message: "Meeting Room Does not Exists"}
-      }
-      const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
-      const editedMeetingData = {
-        ...meetRoomObj,
-        ...roomDetails,
-      };
-      const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
-      await MeetingRoom.update(meetRoomId, data);
-      const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
-      return MeetRoomObject.convertMeetRoomToObj(response);
-    }catch(err:any){
-      throw err;
-    }
-  }
-  */
+ 
 
   public static async doEditMeetRoom(
     meetRoomId: number,
@@ -88,7 +61,7 @@ export class AdminServices {
       };
       const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
       await MeetingRoom.update(meetRoomId, data);
-      //const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
+      
       return meetRoom;
     } catch (err: any) {
       throw err;
@@ -96,13 +69,10 @@ export class AdminServices {
   }
 
   //
-  public static async doEditRoom(
-    meetRoomId: number,
-    roomDetails: MeetingRoom
-  ) {
+  public static async doEditRoom(meetRoomId: number, roomDetails: MeetingRoom) {
     try {
       console.log("services......");
-      console.log(roomDetails,"roomdetail")
+      console.log(roomDetails, "roomdetail");
       const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
       console.log(meetRoom, ".....");
       if (!meetRoom) {
@@ -114,9 +84,9 @@ export class AdminServices {
         ...roomDetails,
       };
       const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
-      console.log("data",data)
+      console.log("data", data);
       await MeetingRoom.update(meetRoomId, data);
-      const response:any = await MeetingRoom.findOneBy({id:meetRoomId});
+      const response: any = await MeetingRoom.findOneBy({ id: meetRoomId });
       return response;
     } catch (err: any) {
       throw err;
@@ -124,23 +94,37 @@ export class AdminServices {
   }
   public static async getMeetRoomHistory(meetRoomId: number) {
     try {
-         console.log("getmeethistory")
+      console.log("getmeethistory");
       const meetRoomHistory = await Booking.findBy({ meetroom_id: meetRoomId });
 
       if (meetRoomHistory.length == 0) {
         throw { status: 404, message: "No history found" };
       }
-      const historyDetails = meetRoomHistory.map((data) => {
+
+      // Sort the data in ascending order by date and start time
+      const sortdata = meetRoomHistory.sort((a, b) => {
+        const dateA = moment(a.date, "DD/MM/YYYY").valueOf();
+        const dateB = moment(b.date, "DD/MM/YYYY").valueOf();
+        const startTimeA = moment(a.start_time, "HH:mm").valueOf();
+        const startTimeB = moment(b.start_time, "HH:mm").valueOf();
+
+        if (dateA === dateB) {
+          return startTimeA - startTimeB; // Compare start times in ascending order
+        } else {
+          return dateA - dateB; // Compare dates in ascending order
+        }
+      });
+      const historyDetails = sortdata.map((data) => {
         return BookingResponseObj.convertBookingToObj(data);
       });
       const meetRoomDetail = await BookingServices.addExtraDetails(
         historyDetails
       );
-      //const meetRoomData = BookingServices.addDuration(meetRoomDetail);
-      //my change
+
       const meetRoomDataduration = BookingServices.addDuration(meetRoomDetail);
-      const meetRoomData = BookingServices.addToatalAttendies(meetRoomDataduration);
-      
+      const meetRoomData =
+        BookingServices.addToatalAttendies(meetRoomDataduration);
+
       return meetRoomData;
     } catch (err: any) {
       throw err;
@@ -157,14 +141,11 @@ export class AdminServices {
 
     if (data) {
       try {
-        console.log("file****");
-
-        //const fileBuffer: any = fs.readFileSync(imgpath);
-        console.log("file****");
+       
         const uploadResult = await cloudinary.v2.uploader.upload(imgpath);
 
         const imageUrl = uploadResult.secure_url;
-        console.log(imageUrl);
+        
 
         return imageUrl;
       } catch (err) {
