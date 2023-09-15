@@ -7,30 +7,18 @@ import { Message } from "../constants/message";
 import { isBefore, addHours, parseISO } from "date-fns";
 
 export class BookingController {
-  /* public static async addBooking(ctx: Context) {
-    try {
-      const roomDetails = ctx.request.body as BookingRoomDto;
-      const response = await BookingServices.bookMeetRoom(roomDetails,ctx);
-
-      ctx.body = Utils.successResponse(Message.SuccessBooking, response);
-    } catch (err: any) {
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status,err.message)
-    }
-  }*/
+ 
 
   public static async addBooking(ctx: Context) {
     try {
-      console.log("addBookingServices");
-      //const roomDetails = ctx.request.body as BookingRoomDto;
+      
       const { guests, ...roomDetails } = ctx.request.body as BookingRoomDto;
-      console.log(ctx.request.body, "ctx");
+      
       const response = await BookingServices.bookMeetRoom(
         { ...roomDetails, guests },
         ctx
       );
-      console.log("****", response);
+      
       ctx.body = Utils.successResponse(Message.SuccessBooking, response);
     } catch (err: any) {
       const status = err.status || 400;
@@ -108,49 +96,11 @@ export class BookingController {
     }
   }
 
-  /* public static async editBooking(ctx: Context) {
-    try {
-      console.log("editbooking..");
-      const id = ctx.params.id;
-      console.log(id);
-      const editedData = ctx.request.body as BookingRoomDto;
-      console.log(editedData, "body");
-      
-      const editedResponse = await BookingServices.doEditBookings(
-        Number(id),
-        editedData
-      );
-
-      ctx.body = Utils.successResponse(Message.EditedBooking, editedResponse);
-    } catch (err: any) {
-      console.log("error", err);
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status, err.message);
-    }
-  }
-
-  public static async deleteBooking(ctx: Context) {
-    try {
-      const id = ctx.params.id;
-      const deletedDataResponse = await BookingServices.doDeleteBooking(
-        Number(id)
-      );
-
-      ctx.body = Utils.successResponse(
-        Message.DeletedBooking,
-        deletedDataResponse
-      );
-    } catch (err: any) {
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status, err.message);
-    }
-  }*/
+ 
 
   public static async editBooking(ctx: Context) {
     try {
-      console.log("editbooking..");
+      
       const id = ctx.params.id;
       console.log(id);
       const editedData = ctx.request.body as BookingRoomDto;

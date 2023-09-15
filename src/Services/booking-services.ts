@@ -31,8 +31,11 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 
 export class BookingServices {
-  public static async bookMeetRoom(bookingDetails: any, ctx: Context) {
-    console.log("ctx.state.me", ctx.state.me);
+  public static async bookMeetRoom(
+    bookingDetails: BookingRoomDto,
+    ctx: Context
+  ) {
+    const userid = ctx.state.me.id;
     try {
       const {
         userId,
@@ -44,7 +47,6 @@ export class BookingServices {
         status,
         guests,
       } = bookingDetails;
-      console.log(bookingDetails.guests, "booking detail");
 
       await this.isMeetRoomExists(meetRoomId);
       const result = await this.roomAvailability(
@@ -53,35 +55,34 @@ export class BookingServices {
         startTime,
         endTime
       );
-      console.log(result);
-      const userid = ctx.state.me.id;
-      console.log(userid, "userid");
       if (result) {
         const bookRoomData = {
           ...bookingDetails,
 
           userId: userid,
         };
-        console.log("join");
         const data = Booking.BookingRoomObj(bookRoomData);
-        console.log(data, "dta");
+        console.log(data, "data");
         const response = await Booking.create(data).save();
         console.log(response);
-
         const responseObj = BookingResponseObj.convertBookingToObj(response);
-        console.log(responseObj, ".........................");
+        // send calender notification
         const result = await calendarnotification(data, ctx);
-
         const eventId = result.response?.id; // Event ID
+        const bid = responseObj.id;
 
-        const bid = responseObj.id; // Event ID
-        console.log("bid:", bid);
-        redisCaching(eventId, bid);
+        if (eventId) {
+          await Booking.update(
+            { id: bid }, // Condition to find the user
+            {
+              eventid: eventId,
+            }
+          );
+        }
 
         if (result.success) {
           console.log("notification done");
           return responseObj;
-          //ctx.body = { msg: result.msg };
         } else {
           console.log("event fail");
         }
@@ -202,19 +203,21 @@ export class BookingServices {
 
   public static async doDeleteBooking(bookingId: number, ctx: Context) {
     try {
-      // Get the event ID associated with the booking from Redis or your cache
-      const data = await AuthenticateMiddleware.getrediseventid(bookingId);
-
-      const eventid = JSON.parse(data);
-      console.log(eventid, "eventid");
-      console.log(typeof eventid, "eventid  1");
+      const booking: any = await Booking.findOneBy({ id: bookingId });
+      console.log(booking, "booking");
+      const eventiiid = booking._eventid;
+      const redisvalue = await AuthenticateMiddleware.getrediseventid(
+        bookingId
+      );
+      console.log(eventiiid, "eventiid");
+      const eventid = JSON.parse(redisvalue);
 
       // Retrieve the booking data from your database
       const bookingData = await Booking.findOneBy({ id: bookingId });
 
       if (bookingData) {
         // Delete the event from Google Calendar using the event ID
-        const success = await deleteCalendarEvent(eventid, ctx);
+        const success = await deleteCalendarEvent(eventiiid, ctx);
 
         // If the event is successfully deleted from Google Calendar, delete it from your database
         if (success) {
@@ -224,13 +227,15 @@ export class BookingServices {
           console.log(Email, "email");
           const accesstoken = ctx.state.me.authtoken;
           console.log(Email, "email");
+          const guestsArray = bookingData.guests;
           // Send booking confirmation email
-
-          const emailSent = await sendEmaildelete(
-            bookingData,
-            accesstoken,
-            Email
-          );
+          if (guestsArray.length != 0) {
+            const emailSent = await sendEmaildelete(
+              bookingData,
+              accesstoken,
+              Email
+            );
+          }
           //
           return BookingResponseObj.convertBookingToObj(bookingData);
         }
@@ -326,7 +331,7 @@ export class BookingServices {
       }
       throw { status: 400, message: "Meeting Room is already occupied" };
     } catch (err: any) {
-      console.log(err, "errrrrrrrrrrrr");
+      console.log(err);
       throw err;
     }
   }
@@ -426,14 +431,13 @@ export class BookingServices {
   }
 
   public static addToatalAttendies(bookings: any) {
-    console.log("attendieas..");
     const bookingResponse = bookings.map((booking: any) => {
       // Get the guests array from the booking object
       const guestsArray = booking.guests;
 
       // Calculate the number of attendees for this booking
       const totalAttendees = guestsArray.length;
-      console.log("totalatten", totalAttendees);
+
       // Create a new object with the booking details and the total number of attendees
       return {
         ...booking,
@@ -449,24 +453,31 @@ export class BookingServices {
     bookingDetails: BookingRoomDto,
     ctx: Context
   ) {
+    const accesstoken = ctx.state.me.authtoken;
+    const email = ctx.state.me.email;
     try {
       const redisvalue = await AuthenticateMiddleware.getrediseventid(
         bookingId
       );
 
       const eventid = JSON.parse(redisvalue);
-      console.log(eventid, "eventid");
-      console.log(typeof eventid, "eventid  1");
+
+      const bookings: any = await Booking.findOneBy({ id: bookingId });
+
+      const eventiiid = bookings._eventid;
 
       let booking: Booking | null = await Booking.findOneBy({ id: bookingId });
-      const current_time = AccessValidation.getCurrentTime();
-      console.log("currenttime....", current_time);
 
-      console.log(booking, "bookin");
+      //
+
+      const current_time = AccessValidation.getCurrentTime();
+
       if (!booking) {
         throw { status: 404, message: "Booking with this ID not found" };
       }
       const data = BookingResponseObj.convertBookingToObj(booking);
+      //
+
       // const data = Booking.BookingRoomObj(booking);
       const editedBookingData = {
         ...data,
@@ -481,7 +492,7 @@ export class BookingServices {
         editedBookingData.endTime,
         bookingId
       );
-      console.log(result, "result");
+
       if (result) {
         const result = Booking.BookingRoomObj(editedBookingData);
         await Booking.update(bookingId, result);
@@ -489,9 +500,9 @@ export class BookingServices {
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
-
+        await sendEmaileguest(booking, accesstoken, email, bookingData);
         const editevent = await updateCalendarEventWithAttendees(
-          eventid,
+          eventiiid,
           editedData,
           ctx
         );
@@ -524,26 +535,18 @@ export class BookingServices {
 //create calender notification
 
 async function calendarnotification(requestData: any, ctx: Context) {
-  console.log(ctx.state.me, "me....");
   const token = ctx.state.me.authtoken;
-  console.log(token, "authtoken");
-  console.log(requestData, "requestdata");
 
   oAuth2Client.setCredentials({
     access_token: token,
   });
 
   oAuth2Client.credentials.access_token = token;
-  console.log("to....", oAuth2Client.credentials.access_token);
 
   const GuestsEmail = requestData.guests.map((guest: { guests: any }) => ({
     email: guest.guests,
   }));
-  console.log("GuestsEmail", GuestsEmail);
-  const orgemail = ctx.state.me.email;
-  console.log("orgemail***********", orgemail);
-  const authemail = [{ email: orgemail }];
-  console.log(authemail, "authemail%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
   console.log(requestData.start_time, requestData.date, "time date");
   const eventStartTime = convertToISODate(
     requestData.date,
@@ -558,7 +561,6 @@ async function calendarnotification(requestData: any, ctx: Context) {
   console.log(roomName, "roomname");
 
   try {
-    console.log("try");
     const response = await calendar.events.insert({
       calendarId: "primary",
       auth: oAuth2Client,
@@ -587,23 +589,24 @@ async function calendarnotification(requestData: any, ctx: Context) {
     });
     // Construct the Google Meet link
     const googleMeetLink: any = response.data.hangoutLink;
-    console.log(googleMeetLink, "google meet link");
 
     const calenderurl = response.data.htmlLink;
 
     const Email = ctx.state.me.email;
-    console.log(Email, "email");
+
     // Send booking confirmation email
-    if (calenderurl) {
-      if (roomName) {
-        const emailSent = await sendEmail(
-          requestData,
-          token,
-          Email,
-          calenderurl,
-          roomName,
-          googleMeetLink
-        );
+    if (GuestsEmail.length != 0) {
+      if (calenderurl) {
+        if (roomName) {
+          const emailSent = await sendEmail(
+            requestData,
+            token,
+            Email,
+            calenderurl,
+            roomName,
+            googleMeetLink
+          );
+        }
       }
     }
 
@@ -645,9 +648,6 @@ function redisCaching(value: any, key: number) {
 async function deleteCalendarEvent(eventiid: string, ctx: Context) {
   try {
     const accessToken = ctx.state.me.authtoken;
-    console.log("apikey", typeof apiKey);
-
-    console.log("calender");
 
     oAuth2Client.setCredentials({
       access_token: accessToken,
@@ -684,9 +684,6 @@ async function updateCalendarEventWithAttendees(
   console.log(eventid), console.log(editedData);
   console.log(typeof eventid);
   const accessToken = ctx.state.me.authtoken;
-  console.log("accesstoken", accessToken);
-
-  console.log("calender");
 
   oAuth2Client.setCredentials({
     access_token: accessToken,
@@ -708,7 +705,7 @@ async function updateCalendarEventWithAttendees(
       .filter((attendee) => attendee.email)
       .map((attendee) => ({ email: attendee.email }));
 
-    console.log(existingAttendees);
+    console.log(existingAttendees, "existing attendies");
 
     const startdatetime = convertToISODate(
       editedData.date,
@@ -720,7 +717,7 @@ async function updateCalendarEventWithAttendees(
     const newAttendees = editedData.guests.map((guest: { guests: any }) => ({
       email: guest.guests,
     }));
-    console.log("GuestsEmail", newAttendees);
+    console.log("new attendees", newAttendees);
     const meetroom = await MeetingRoom.findOneBy({
       id: editedData.meetRoomId,
     });
@@ -761,21 +758,20 @@ async function updateCalendarEventWithAttendees(
     console.log(Email, "email");
     // Construct the Google Meet link
     const googleMeetLink: any = response.data.hangoutLink;
-    console.log(
-      googleMeetLink,
-      "google meet link********************************"
-    );
+
     // Send booking confirmation email
-    if (calenderurl) {
-      if (roomName) {
-        const emailSent = await sendEmailEdit(
-          editedData,
-          accessToken,
-          Email,
-          calenderurl,
-          roomName,
-          googleMeetLink
-        );
+    if (newAttendees.length != 0) {
+      if (calenderurl) {
+        if (roomName) {
+          const emailSent = await sendEmailEdit(
+            editedData,
+            accessToken,
+            Email,
+            calenderurl,
+            roomName,
+            googleMeetLink
+          );
+        }
       }
     }
     console.log("update event");
@@ -827,7 +823,7 @@ async function sendEmail(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl} googlemeetlink:${googleMeetLink}`,
+      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
@@ -849,7 +845,7 @@ async function sendEmaildelete(
     oAuth2Client.setCredentials({
       access_token: access_token,
     });
-    console.log("bookingdeat*********", bookingDetails);
+
     oAuth2Client.credentials.access_token = access_token;
     // Create a Nodemailer transporter with OAuth2 authentication
     const transporter = nodemailer.createTransport({
@@ -875,8 +871,8 @@ async function sendEmaildelete(
     const mailOptions = {
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
-      subject: `Meeting cancelled : ${bookingDetails.title}`,
-      text: `Meeting is cancelled ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description} `,
+      subject: `Meeting Cancelled : ${bookingDetails.title}`,
+      text: `Meeting is Cancelled ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description} `,
     };
 
     // Send the email
@@ -930,7 +926,7 @@ async function sendEmailEdit(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `Your  Meeting is Edited ${bookingDetails.date} from ${bookingDetails.startTime} to ${bookingDetails.endTime}. Description: ${bookingDetails.description}  meetrom:${meetroomname} calenderurl:${calenderurl} googlemeetlink:${googlemeetlink}`,
+      text: `Your  Meeting is Edited ${bookingDetails.date} from ${bookingDetails.startTime} to ${bookingDetails.endTime}.\n Description: ${bookingDetails.description} \n MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \nGoogleMeetLink:${googlemeetlink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
@@ -942,3 +938,75 @@ async function sendEmailEdit(
     throw error;
   }
 }
+
+//
+async function sendEmaileguest(
+  bookingDetails: any,
+  access_token: string,
+  Email: string,
+  editedBookingData: any
+) {
+  try {
+    oAuth2Client.setCredentials({
+      access_token: access_token,
+    });
+
+    oAuth2Client.credentials.access_token = access_token;
+    // Create a Nodemailer transporter with OAuth2 authentication
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Or your email provider
+      auth: {
+        type: "OAuth2",
+        user: Email, // Your email address
+        clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
+        accessToken: access_token, // Access token passed as an argument
+      },
+    });
+    //old
+    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+      email: guest.guests,
+    }));
+
+    const emailAddresses: string[] = GuestsEmail.map(
+      (guest: { email: any }) => guest.email
+    );
+    console.log(emailAddresses, "emailA");
+    //new
+    const GuestsEmail1 = editedBookingData.guests.map(
+      (guest: { guests: any }) => ({
+        email: guest.guests,
+      })
+    );
+
+    const emailAddresses1: string[] = GuestsEmail1.map(
+      (guest: { email: any }) => guest.email
+    );
+    console.log(emailAddresses1, "emailadressedit");
+    const elementsOnlyInArray1 = emailAddresses.filter(
+      (item) => !emailAddresses1.includes(item)
+    );
+
+    if (elementsOnlyInArray1.length != 0) {
+      var sender = elementsOnlyInArray1;
+    } else {
+      var sender = ["random@gmail.com"];
+    }
+    // Compose the email
+    const mailOptions = {
+      from: Email, // Your email address
+      to: sender, // Recipient's email addresses
+      subject: `Meeting title: ${bookingDetails.title}`,
+      text: `You Are No Longer a Guest For This Meeting`,
+      // html: "<h1>Meeting set</h1>",
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+}
+//
