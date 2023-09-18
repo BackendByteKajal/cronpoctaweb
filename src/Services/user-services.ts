@@ -29,7 +29,7 @@ export class UserServices {
   }
   //
   public static async Registeruser(userData: any) {
-    console.log("user..");
+    console.log("user",userData);
     const result = await this.isUserExistsUser(userData.email);
 
     const saveUser: UserLogin = UserLogin.fromRegisterObj(userData);
@@ -42,7 +42,7 @@ export class UserServices {
       await UserLogin.update(
         { email: userData.email }, // Condition to find the user
         {
-          googleid: userData.googleid,
+          
 
           authtoken: userData.authtoken,
         }

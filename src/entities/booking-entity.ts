@@ -1,4 +1,12 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import { Builder } from "builder-pattern";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
@@ -16,7 +24,7 @@ export class Booking extends BaseEntity {
   private _status: string;
   private _guests: string[];
   private _description: string;
-  private _eventid: string;
+  public _eventid: string;
 
   @PrimaryGeneratedColumn()
   public get id(): number {
@@ -74,7 +82,7 @@ export class Booking extends BaseEntity {
     this._end_time = end_time;
   }
 
-  @Column({ default: "Inactive" })
+  @Column({ default: "Active" })
   public get status(): string {
     return this._status;
   }
@@ -134,7 +142,7 @@ export class Booking extends BaseEntity {
       .guests(bookingObj.guests)
       .description(bookingObj.description)
       //.eventid(bookingObj.evenid)
-      
+
       .build();
 
     return obj;

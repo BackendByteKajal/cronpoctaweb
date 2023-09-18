@@ -15,7 +15,6 @@ dotenv.config({ path: ".env" });
 const GOOGLE_CLIENT_ID: any = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET: any = process.env.GOOGLE_CLIENT_SECRET;
 
-
 passportmodule.use(
   new GoogleStrategy(
     {
@@ -30,34 +29,31 @@ passportmodule.use(
       done: any
     ) => {
       const data = {
-        googleid: profile.id,
+        
         userName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
         authtoken: accessToken,
         is_varified: profile.emails[0].verified,
       };
-      const userdata: UserLogin | any = await UserServices.Registeruser(data);
+      const userdata: UserLogin | null = await UserServices.Registeruser(data);
       console.log(userdata, "userdata");
-      const user = UserLoginObject.convertToObj(userdata);
-      console.log("data", user);
-      console.log(profile);
-      const authemail = profile.emails[0].value;
+      if(userdata){
+      let user = UserLoginObject.convertToObj(userdata);
+       console.log(profile);
       const token = AuthServices.createToken(user);
       AuthServices.redisCaching(user, token);
-
       done(null, user, token);
+      }
     }
   )
 );
 
-
-
 // Passport serialization and deserialization
-passportmodule.serializeUser<any, any>((user, done: any) => {
+passportmodule.serializeUser<UserLogin, any>((user, done:any) => {
   done(null, user);
 });
-passportmodule.deserializeUser<any, any>((user, done) => {
+passportmodule.deserializeUser<UserLogin, any>((user, done:any) => {
   done(null, user);
 });
 export default passportmodule;
