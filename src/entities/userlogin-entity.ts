@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Builder } from "builder-pattern";
-import { RegisterUserDto } from "../dtos/request/user-register-dto";
+import { RegisterLoginUserDto, RegisterUserDto } from "../dtos/request/user-register-dto";
 
 @Entity()
 export class UserLogin extends BaseEntity {
@@ -64,13 +64,13 @@ export class UserLogin extends BaseEntity {
     this._is_verified = is_verified;
   }
 
-  @Column({ nullable: true })
-  public get googleid(): string {
-    return this._googleid;
-  }
-  public set googleid(googleid: string) {
-    this._googleid = googleid;
-  }
+  // @Column({ nullable: true })
+  // public get googleid(): string {
+  //   return this._googleid;
+  // }
+  // public set googleid(googleid: string) {
+  //   this._googleid = googleid;
+  // }
   @Column({ nullable: true })
   public get authtoken(): string {
     return this._authtoken;
@@ -88,14 +88,14 @@ export class UserLogin extends BaseEntity {
   @DeleteDateColumn()
   deleted_at: Date; // Deletion date
 
-  public static fromRegisterObj(registerObj: any): UserLogin {
+  public static fromRegisterObj(registerObj: RegisterLoginUserDto): UserLogin {
     const obj = Builder<UserLogin>()
       .email(registerObj.email)
       .user_name(registerObj.userName)
       .last_name(registerObj.lastName)
       .is_verified(true)
       .authtoken(registerObj.authtoken)
-      .googleid(registerObj.googleid)
+      
       .build();
 
     return obj;

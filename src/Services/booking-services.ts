@@ -295,6 +295,7 @@ export class BookingServices {
     }
   }
 
+  //room aviailability for book room
   public static async roomAvailability(
     MeetRoomId: number,
     date: string,
@@ -335,6 +336,8 @@ export class BookingServices {
       throw err;
     }
   }
+
+  //room availability for edit room
   public static async roomAvailabilityForEdit(
     MeetRoomId: number,
     date: string,
@@ -343,17 +346,14 @@ export class BookingServices {
     booking_id: number
   ) {
     try {
-      console.log(MeetRoomId, "meetroomr");
-      /* const booking_room_details = await Booking.findBy({
-        meetroom_id: MeetRoomId,
-      });*/
+      
       const booking_room_details = await Booking.find({
         where: {
           meetroom_id: MeetRoomId,
           id: Not(booking_id) as unknown as number, // Convert to number type
         },
       });
-      console.log(booking_room_details, "bookingdetailroom");
+      
       if (booking_room_details.length == 0) {
         // return "Room is Available";
         return true;
@@ -381,6 +381,7 @@ export class BookingServices {
       throw err;
     }
   }
+
   public static async addExtraDetails(toUpdateArray: any) {
     const updatedArray = await Promise.all(
       toUpdateArray.map(async (obj: any) => {
@@ -453,6 +454,7 @@ export class BookingServices {
     bookingDetails: BookingRoomDto,
     ctx: Context
   ) {
+    let eventiiid = "";
     const accesstoken = ctx.state.me.authtoken;
     const email = ctx.state.me.email;
     try {
@@ -462,9 +464,12 @@ export class BookingServices {
 
       const eventid = JSON.parse(redisvalue);
 
-      const bookings: any = await Booking.findOneBy({ id: bookingId });
-
-      const eventiiid = bookings._eventid;
+      const bookings: Booking | null = await Booking.findOneBy({
+        id: bookingId,
+      });
+      if (bookings) {
+        eventiiid = bookings._eventid;
+      }
 
       let booking: Booking | null = await Booking.findOneBy({ id: bookingId });
 
@@ -500,14 +505,16 @@ export class BookingServices {
         const bookingData: any = await Booking.findOneBy({ id: bookingId });
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
-        await sendEmaileguest(booking, accesstoken, email, bookingData);
+        //send email to remove guest
+        await sendEmaileRemoveguest(booking, accesstoken, email, bookingData);
+        //update calender event
         const editevent = await updateCalendarEventWithAttendees(
           eventiiid,
           editedData,
           ctx
         );
         const room_name = await this.MeetRoomName(bookingDetails.meetRoomId);
-        console.log(editedData.meetRoomId, "meetid");
+        
         return { ...editedData, roomname: room_name };
         // return editedData;
       }
@@ -517,8 +524,8 @@ export class BookingServices {
   }
   public static async MeetRoomName(MeetRoomId: number) {
     try {
-      console.log("roomfunction");
-      const Roomdetail: any = await MeetingRoom.findOneBy({ id: MeetRoomId });
+      
+      const Roomdetail: MeetingRoom | null = await MeetingRoom.findOneBy({ id: MeetRoomId });
       //const RoomName = Roomdetail.room_name;
       //console.log("roomname", RoomName);
 
@@ -534,7 +541,7 @@ export class BookingServices {
 
 //create calender notification
 
-async function calendarnotification(requestData: any, ctx: Context) {
+async function calendarnotification(requestData: Booking, ctx: Context) {
   const token = ctx.state.me.authtoken;
 
   oAuth2Client.setCredentials({
@@ -542,23 +549,24 @@ async function calendarnotification(requestData: any, ctx: Context) {
   });
 
   oAuth2Client.credentials.access_token = token;
+  const Guest: any = requestData.guests;
 
-  const GuestsEmail = requestData.guests.map((guest: { guests: any }) => ({
+  const GuestsEmail = Guest.map((guest: { guests: string }) => ({
     email: guest.guests,
   }));
 
-  console.log(requestData.start_time, requestData.date, "time date");
+  
   const eventStartTime = convertToISODate(
     requestData.date,
     requestData.start_time
   );
-  console.log(eventStartTime, "starttime");
+  
   const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
 
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
   const roomName = meetroom?.room_name;
-  console.log(roomName, "roomname");
+  
 
   try {
     const response = await calendar.events.insert({
@@ -620,12 +628,9 @@ async function calendarnotification(requestData: any, ctx: Context) {
   }
 }
 
-//
+//conver to ISODate
 function convertToISODate(dateString: string, timeString: string): string {
-  console.log("conver");
-  console.log(dateString);
-
-  console.log(timeString);
+ 
   const dateParts = dateString.split("/");
   const year = parseInt(dateParts[2]);
   const month = parseInt(dateParts[1]);
@@ -639,10 +644,10 @@ function convertToISODate(dateString: string, timeString: string): string {
   return dateTime.toISOString();
 }
 
-function redisCaching(value: any, key: number) {
-  const redisObj = RedisCache.connect();
-  redisObj.set(String(key), JSON.stringify(value)); // Convert key to string
-}
+// function redisCaching(value: any, key: number) {
+//   const redisObj = RedisCache.connect();
+//   redisObj.set(String(key), JSON.stringify(value)); // Convert key to string
+// }
 
 // Function to delete a calendar event
 async function deleteCalendarEvent(eventiid: string, ctx: Context) {
@@ -678,11 +683,10 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
 
 async function updateCalendarEventWithAttendees(
   eventid: string,
-  editedData: any,
+  editedData: BookingResponseObj,
   ctx: Context
 ) {
-  console.log(eventid), console.log(editedData);
-  console.log(typeof eventid);
+ 
   const accessToken = ctx.state.me.authtoken;
 
   oAuth2Client.setCredentials({
@@ -700,12 +704,12 @@ async function updateCalendarEventWithAttendees(
 
     const dataemail = event.data.attendees || []; // Ensure attendees is an array
 
-    // Convert the 'dataemail' array to 'existingAttendees' format
-    const existingAttendees = dataemail
-      .filter((attendee) => attendee.email)
-      .map((attendee) => ({ email: attendee.email }));
+    // // Convert the 'dataemail' array to 'existingAttendees' format
+    // const existingAttendees = dataemail
+    //   .filter((attendee) => attendee.email)
+    //   .map((attendee) => ({ email: attendee.email }));
 
-    console.log(existingAttendees, "existing attendies");
+    
 
     const startdatetime = convertToISODate(
       editedData.date,
@@ -713,11 +717,12 @@ async function updateCalendarEventWithAttendees(
     );
 
     const enddatetime = convertToISODate(editedData.date, editedData.endTime);
-
-    const newAttendees = editedData.guests.map((guest: { guests: any }) => ({
+    
+    const Guest: any = editedData.guests;
+    const newAttendees = Guest.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
-    console.log("new attendees", newAttendees);
+  
     const meetroom = await MeetingRoom.findOneBy({
       id: editedData.meetRoomId,
     });
@@ -755,7 +760,7 @@ async function updateCalendarEventWithAttendees(
     const calenderurl = response.data.htmlLink;
 
     const Email = ctx.state.me.email;
-    console.log(Email, "email");
+    
     // Construct the Google Meet link
     const googleMeetLink: any = response.data.hangoutLink;
 
@@ -785,7 +790,7 @@ async function updateCalendarEventWithAttendees(
 //send mail for meeting set
 
 async function sendEmail(
-  bookingDetails: any,
+  bookingDetails: Booking,
   access_token: string,
   Email: string,
   calenderurl: string,
@@ -798,6 +803,7 @@ async function sendEmail(
     });
 
     oAuth2Client.credentials.access_token = access_token;
+
     // Create a Nodemailer transporter with OAuth2 authentication
     const transporter = nodemailer.createTransport({
       service: "gmail", // Or your email provider
@@ -809,13 +815,13 @@ async function sendEmail(
         accessToken: access_token, // Access token passed as an argument
       },
     });
-
-    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+    const emailarr: any = bookingDetails.guests;
+    const GuestsEmail = emailarr.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
 
     const emailAddresses: string[] = GuestsEmail.map(
-      (guest: { email: any }) => guest.email
+      (guest: { email: string }) => guest.email
     );
 
     // Compose the email
@@ -837,7 +843,7 @@ async function sendEmail(
 }
 //send mail for delete event
 async function sendEmaildelete(
-  bookingDetails: any,
+  bookingDetails: Booking,
   access_token: string,
   Email: string
 ) {
@@ -858,13 +864,13 @@ async function sendEmaildelete(
         accessToken: access_token, // Access token passed as an argument
       },
     });
-
-    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+    const emailarr: any = bookingDetails.guests;
+    const GuestsEmail = emailarr.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
 
     const emailAddresses: string[] = GuestsEmail.map(
-      (guest: { email: any }) => guest.email
+      (guest: { email: string }) => guest.email
     );
 
     // Compose the email
@@ -887,7 +893,7 @@ async function sendEmaildelete(
 //send mail for edit meeting
 
 async function sendEmailEdit(
-  bookingDetails: any,
+  bookingDetails: BookingResponseObj,
   access_token: string,
   Email: string,
   calenderurl: string,
@@ -913,12 +919,13 @@ async function sendEmailEdit(
       },
     });
 
-    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+    const emailarr: any = bookingDetails.guests;
+    const GuestsEmail = emailarr.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
 
     const emailAddresses: string[] = GuestsEmail.map(
-      (guest: { email: any }) => guest.email
+      (guest: { email: string }) => guest.email
     );
 
     // Compose the email
@@ -939,71 +946,75 @@ async function sendEmailEdit(
   }
 }
 
-//
-async function sendEmaileguest(
-  bookingDetails: any,
+//send email to remove guest
+async function sendEmaileRemoveguest(
+  bookingDetails: Booking,
   access_token: string,
   Email: string,
-  editedBookingData: any
+  editedBookingData: Booking
 ) {
+  let sender;
   try {
     oAuth2Client.setCredentials({
       access_token: access_token,
     });
 
     oAuth2Client.credentials.access_token = access_token;
-    // Create a Nodemailer transporter with OAuth2 authentication
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // Or your email provider
-      auth: {
-        type: "OAuth2",
-        user: Email, // Your email address
-        clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
-        accessToken: access_token, // Access token passed as an argument
-      },
-    });
-    //old
-    const GuestsEmail = bookingDetails.guests.map((guest: { guests: any }) => ({
+
+    //old guest array
+    const guestoldarr: any = bookingDetails.guests;
+    const GuestsEmail = guestoldarr.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
-
     const emailAddresses: string[] = GuestsEmail.map(
-      (guest: { email: any }) => guest.email
-    );
-    console.log(emailAddresses, "emailA");
-    //new
-    const GuestsEmail1 = editedBookingData.guests.map(
-      (guest: { guests: any }) => ({
-        email: guest.guests,
-      })
+      (guest: { email: string }) => guest.email
     );
 
+    //new Guest Array
+    const guestnewarr: any = editedBookingData.guests;
+    const GuestsEmail1 = guestnewarr.map((guest: { guests: string }) => ({
+      email: guest.guests,
+    }));
     const emailAddresses1: string[] = GuestsEmail1.map(
-      (guest: { email: any }) => guest.email
+      (guest: { email: string }) => guest.email
     );
-    console.log(emailAddresses1, "emailadressedit");
+
+    //remove guest array
     const elementsOnlyInArray1 = emailAddresses.filter(
       (item) => !emailAddresses1.includes(item)
     );
 
+    //send mail to remove guest
     if (elementsOnlyInArray1.length != 0) {
-      var sender = elementsOnlyInArray1;
-    } else {
-      var sender = ["random@gmail.com"];
+      sender = elementsOnlyInArray1;
     }
-    // Compose the email
-    const mailOptions = {
-      from: Email, // Your email address
-      to: sender, // Recipient's email addresses
-      subject: `Meeting title: ${bookingDetails.title}`,
-      text: `You Are No Longer a Guest For This Meeting`,
-      // html: "<h1>Meeting set</h1>",
-    };
+    if (sender) {
+      // Create a Nodemailer transporter with OAuth2 authentication
+      const transporter = nodemailer.createTransport({
+        service: "gmail", // Or your email provider
+        auth: {
+          type: "OAuth2",
+          user: Email, // Your email address
+          clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
+          accessToken: access_token, // Access token passed as an argument
+        },
+      });
 
-    // Send the email
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
+      // Compose the email
+      const mailOptions = {
+        from: Email, // Your email address
+        to: sender, // Recipient's email addresses
+        subject: `Meeting title: ${bookingDetails.title}`,
+        text: `You Are No Longer a Guest For This Meeting`,
+        // html: "<h1>Meeting set</h1>",
+      };
+
+      // Send the email
+      const info = await transporter.sendMail(mailOptions);
+
+      console.log("Email sent:", info.response);
+    }
   } catch (error) {
     console.error("Error sending email:", error);
     throw error;
