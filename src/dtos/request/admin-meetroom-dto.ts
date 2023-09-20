@@ -9,3 +9,8 @@ export class MeetRoomDto {
     capacity: number;
   
   }
+  export class MeetingRoomDtobody {
+    meetRoomName: string;
+    capacity: number;
+    status:string
+  }

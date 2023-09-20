@@ -1,17 +1,23 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import { Builder } from "builder-pattern";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
 import { MeetRoomDto } from "../dtos/request/admin-meetroom-dto";
 
 @Entity()
-export class MeetingRoom extends BaseEntity{
-
+export class MeetingRoom extends BaseEntity {
   private _id: number;
   private _room_name: string;
   private _capacity: number;
   private _image_url: string;
   private _status: string;
-  
 
   @PrimaryGeneratedColumn()
   public get id(): number {
@@ -21,7 +27,7 @@ export class MeetingRoom extends BaseEntity{
     this._id = id;
   }
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   public get room_name(): string {
     return this._room_name;
   }
@@ -29,7 +35,7 @@ export class MeetingRoom extends BaseEntity{
     this._room_name = room_name;
   }
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   public get capacity(): number {
     return this._capacity;
   }
@@ -37,7 +43,7 @@ export class MeetingRoom extends BaseEntity{
     this._capacity = capacity;
   }
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   public get image_url(): string {
     return this._image_url;
   }
@@ -45,7 +51,7 @@ export class MeetingRoom extends BaseEntity{
     this._image_url = image_url;
   }
 
-  @Column({default:"active"})
+  @Column({ default: "Active" })
   public get status(): string {
     return this._status;
   }
@@ -77,10 +83,9 @@ export class MeetingRoom extends BaseEntity{
       .room_name(MeetRoomObj.meetRoomName)
       .capacity(MeetRoomObj.capacity)
       .image_url(MeetRoomObj.imageUrl)
-      .status(MeetRoomObj.status) 
+      .status(MeetRoomObj.status)
       .build();
 
     return obj;
   }
-
 }

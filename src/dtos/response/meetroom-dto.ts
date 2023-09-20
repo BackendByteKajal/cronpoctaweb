@@ -1,5 +1,4 @@
 import { Builder } from "builder-pattern";
-import { User } from "../../entities/user-entity";
 import { MeetingRoom } from "../../entities/meeting_room-entity";
 
 export class MeetRoomObject {

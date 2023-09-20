@@ -3,7 +3,7 @@ import { BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
-//import { User } from "../entities/user-entity";
+
 import { BookMeetRoomValidations } from "../Validator/bookroom-valication";
 import json from "koa-json";
 const moment = require("moment");
@@ -11,7 +11,7 @@ import { calendar_v3, google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { Not } from "typeorm";
 import { AccessValidation } from "../Validator/access-validation";
-import { UserLogin } from "../entities/userlogin-entity";
+import { User } from "../entities/user-entity";
 import { MeetRoomDto } from "../dtos/request/admin-meetroom-dto";
 import { AuthenticateMiddleware } from "../Middleware/Authentication";
 import { AuthServices } from "./auth-services";
@@ -62,31 +62,27 @@ export class BookingServices {
           userId: userid,
         };
         const data = Booking.BookingRoomObj(bookRoomData);
-        console.log(data, "data");
-        const response = await Booking.create(data).save();
-        console.log(response);
-        const responseObj = BookingResponseObj.convertBookingToObj(response);
+        
         // send calender notification
         const result = await calendarnotification(data, ctx);
-        const eventId = result.response?.id; // Event ID
-        const bid = responseObj.id;
-
-        if (eventId) {
-          await Booking.update(
-            { id: bid }, // Condition to find the user
-            {
-              eventid: eventId,
-            }
-          );
-        }
 
         if (result.success) {
+          const eventId = result.response?.id; // Event ID
+          
+          const bookRoomdata = {
+            ...bookRoomData,
+
+            eventid: eventId,
+          };
+          const data = Booking.BookingRoomObj(bookRoomdata);
+          const response = await Booking.create(data).save();
+          
+          const responseObj = BookingResponseObj.convertBookingToObj(response);
+         
           console.log("notification done");
           return responseObj;
-        } else {
-          console.log("event fail");
         }
-        //return responseObj;
+        
       }
     } catch (err: any) {
       throw err;
@@ -192,7 +188,6 @@ export class BookingServices {
       const bookingData = sortdata.map((booking) => {
         return BookingResponseObj.convertBookingToObj(booking);
       });
-      // console.log(bookingData)
       const allBookings = await this.addExtraDetails(bookingData);
       const allBookingsHistory = this.addDuration(allBookings);
       return allBookingsHistory.slice().reverse();
@@ -204,7 +199,7 @@ export class BookingServices {
   public static async doDeleteBooking(bookingId: number, ctx: Context) {
     try {
       const booking: any = await Booking.findOneBy({ id: bookingId });
-      console.log(booking, "booking");
+      
       const eventiiid = booking._eventid;
       const redisvalue = await AuthenticateMiddleware.getrediseventid(
         bookingId
@@ -224,9 +219,9 @@ export class BookingServices {
           await Booking.delete(bookingId);
           //
           const Email = ctx.state.me.email;
-          console.log(Email, "email");
+          
           const accesstoken = ctx.state.me.authtoken;
-          console.log(Email, "email");
+        
           const guestsArray = bookingData.guests;
           // Send booking confirmation email
           if (guestsArray.length != 0) {
@@ -276,7 +271,7 @@ export class BookingServices {
   }
 
   public static async bookingDelete(bookid: any): Promise<any> {
-    const booking = await UserLogin.delete({ id: bookid });
+    const booking = await User.delete({ id: bookid });
     //const userData1: User = User.fromRegisterObj(userData);
     return booking;
   }
@@ -303,11 +298,11 @@ export class BookingServices {
     endTime: string
   ) {
     try {
-      console.log(MeetRoomId, "meetroomr");
+  
       const booking_room_details = await Booking.findBy({
         meetroom_id: MeetRoomId,
       });
-      console.log(booking_room_details, "bookingdetailroom");
+      
       if (booking_room_details.length == 0) {
         // return "Room is Available";
         return true;
@@ -346,14 +341,13 @@ export class BookingServices {
     booking_id: number
   ) {
     try {
-      
       const booking_room_details = await Booking.find({
         where: {
           meetroom_id: MeetRoomId,
           id: Not(booking_id) as unknown as number, // Convert to number type
         },
       });
-      
+
       if (booking_room_details.length == 0) {
         // return "Room is Available";
         return true;
@@ -387,7 +381,7 @@ export class BookingServices {
       toUpdateArray.map(async (obj: any) => {
         const newObj = { ...obj };
 
-        const userNamedata = await UserLogin.findOneBy({ id: obj.userId });
+        const userNamedata = await User.findOneBy({ id: obj.userId });
         const meetRoomData = await MeetingRoom.findOneBy({
           id: obj.meetRoomId,
         });
@@ -395,13 +389,12 @@ export class BookingServices {
         newObj.userName = userNamedata ? userNamedata.user_name : null;
         newObj.lastName = userNamedata ? userNamedata.last_name : null;
         newObj.meetingRoomName = meetRoomData ? meetRoomData?.room_name : null;
-        console.log(newObj);
-        console.log({ meetRoomData });
+       
 
         return newObj;
       })
     );
-    // console.log(updatedArray);
+    
     return updatedArray;
   }
 
@@ -489,7 +482,7 @@ export class BookingServices {
         ...bookingDetails,
       };
       //check wheather slot is available or not
-      console.log("data", editedBookingData);
+      
       const result = await this.roomAvailabilityForEdit(
         editedBookingData.meetRoomId,
         editedBookingData.date,
@@ -514,7 +507,7 @@ export class BookingServices {
           ctx
         );
         const room_name = await this.MeetRoomName(bookingDetails.meetRoomId);
-        
+
         return { ...editedData, roomname: room_name };
         // return editedData;
       }
@@ -524,11 +517,10 @@ export class BookingServices {
   }
   public static async MeetRoomName(MeetRoomId: number) {
     try {
-      
-      const Roomdetail: MeetingRoom | null = await MeetingRoom.findOneBy({ id: MeetRoomId });
-      //const RoomName = Roomdetail.room_name;
-      //console.log("roomname", RoomName);
-
+      const Roomdetail: MeetingRoom | null = await MeetingRoom.findOneBy({
+        id: MeetRoomId,
+      });
+     
       if (!Roomdetail) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
@@ -555,18 +547,16 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
     email: guest.guests,
   }));
 
-  
   const eventStartTime = convertToISODate(
     requestData.date,
     requestData.start_time
   );
-  
+
   const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
 
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
   const roomName = meetroom?.room_name;
-  
 
   try {
     const response = await calendar.events.insert({
@@ -624,13 +614,16 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   } catch (error) {
     console.error("Error creating event:", error);
     ctx.status = 500;
-    return { success: false, error: error };
+    throw {
+      status: 404,
+      message: "Booking Not Created",
+    };
+    
   }
 }
 
 //conver to ISODate
 function convertToISODate(dateString: string, timeString: string): string {
- 
   const dateParts = dateString.split("/");
   const year = parseInt(dateParts[2]);
   const month = parseInt(dateParts[1]);
@@ -644,10 +637,7 @@ function convertToISODate(dateString: string, timeString: string): string {
   return dateTime.toISOString();
 }
 
-// function redisCaching(value: any, key: number) {
-//   const redisObj = RedisCache.connect();
-//   redisObj.set(String(key), JSON.stringify(value)); // Convert key to string
-// }
+
 
 // Function to delete a calendar event
 async function deleteCalendarEvent(eventiid: string, ctx: Context) {
@@ -686,7 +676,6 @@ async function updateCalendarEventWithAttendees(
   editedData: BookingResponseObj,
   ctx: Context
 ) {
- 
   const accessToken = ctx.state.me.authtoken;
 
   oAuth2Client.setCredentials({
@@ -704,25 +693,19 @@ async function updateCalendarEventWithAttendees(
 
     const dataemail = event.data.attendees || []; // Ensure attendees is an array
 
-    // // Convert the 'dataemail' array to 'existingAttendees' format
-    // const existingAttendees = dataemail
-    //   .filter((attendee) => attendee.email)
-    //   .map((attendee) => ({ email: attendee.email }));
-
     
-
     const startdatetime = convertToISODate(
       editedData.date,
       editedData.startTime
     );
 
     const enddatetime = convertToISODate(editedData.date, editedData.endTime);
-    
+
     const Guest: any = editedData.guests;
     const newAttendees = Guest.map((guest: { guests: string }) => ({
       email: guest.guests,
     }));
-  
+
     const meetroom = await MeetingRoom.findOneBy({
       id: editedData.meetRoomId,
     });
@@ -760,7 +743,7 @@ async function updateCalendarEventWithAttendees(
     const calenderurl = response.data.htmlLink;
 
     const Email = ctx.state.me.email;
-    
+
     // Construct the Google Meet link
     const googleMeetLink: any = response.data.hangoutLink;
 
@@ -829,7 +812,7 @@ async function sendEmail(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
+      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
@@ -878,7 +861,7 @@ async function sendEmaildelete(
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
       subject: `Meeting Cancelled : ${bookingDetails.title}`,
-      text: `Meeting is Cancelled ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.start_time}. Description: ${bookingDetails.description} `,
+      text: `Meeting is Cancelled ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. Description: ${bookingDetails.description} `,
     };
 
     // Send the email
@@ -900,7 +883,7 @@ async function sendEmailEdit(
   meetroomname: string,
   googlemeetlink: string
 ) {
-  console.log(bookingDetails, "bookingDetails");
+  
   try {
     oAuth2Client.setCredentials({
       access_token: access_token,
@@ -1020,4 +1003,4 @@ async function sendEmaileRemoveguest(
     throw error;
   }
 }
-//
+

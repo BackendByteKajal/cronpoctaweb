@@ -18,20 +18,13 @@ const app = new Koa();
 const router = new Router();
 app.keys = ["mrbskey"];
 
-//import passport from "./passport";
 import session from "koa-session";
 
 import passportmodule from "koa-passport";
 app.use(bodyParser());
 app.use(json());
 app.use(cors());
-// app.use(
-//   cors({
-//     origin: "https://e13f-27-107-28-2.ngrok-free.app",
-//     methods: "GET,POST,PUT,DELETE,PATCH",
-//     credentials: true,
-//   })
-// );
+
 app.use(session(app)); // Use koa-session
 app.use(passportmodule.initialize());
 app.use(passportmodule.session());
@@ -48,7 +41,7 @@ app.use(
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port = 3054;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });

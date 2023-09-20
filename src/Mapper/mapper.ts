@@ -6,6 +6,7 @@ export class Mapper {
     meetingRoom.room_name = obj.meetRoomName;
     meetingRoom.capacity = obj.capacity;
     meetingRoom.image_url = imgurl;
+    meetingRoom.status = obj.status;
     return meetingRoom;
   }
 }

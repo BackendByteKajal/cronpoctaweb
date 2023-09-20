@@ -11,7 +11,6 @@ export const UserApiRoutes = {
   UserVerification:"/user/:id/verify",
   GetAllGuests:"/getallguests",
   UserVerified:"/userverified/:id"
-   //UserVerification:"/home"
 }
 
 export const AdminApiRoutes = {

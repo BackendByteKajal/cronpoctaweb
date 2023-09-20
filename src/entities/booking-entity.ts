@@ -141,7 +141,7 @@ export class Booking extends BaseEntity {
       .status(bookingObj.status)
       .guests(bookingObj.guests)
       .description(bookingObj.description)
-      //.eventid(bookingObj.evenid)
+      .eventid(bookingObj.eventid)
 
       .build();
 

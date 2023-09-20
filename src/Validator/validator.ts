@@ -42,7 +42,6 @@ export class UserValidator {
       const req = ctx.request.body;
       const validationResponse = createJSON.body.validate(req);
       if (validationResponse && validationResponse.error) {
-        // console.log(validationResponse);
         throw validationResponse.error;
       }
       return next();
@@ -53,8 +52,6 @@ export class UserValidator {
   }
 }
 
-
-  
 export class AdminValidator {
   public static addMeetRoomValidation(ctx: Context, next: Next) {
     console.log("validator");
@@ -92,13 +89,12 @@ export class AdminValidator {
   }
 
   public static editMeetRoomValidation(ctx: Context, next: Next) {
-    console.log("editMeetRoomValidation");
-
     try {
       const editJSON = {
         body: Joi.object({
           meetRoomName: Joi.string().trim().max(20).min(3).required(), // Optional for edit
           capacity: Joi.number().integer().required(), // Optional for edit
+          status: Joi.string().trim().optional(), // Optional for edit
           imageurl: Joi.object({
             file: Joi.any()
               .custom((value, helpers) => {
@@ -127,5 +123,4 @@ export class AdminValidator {
   }
 
   //
-  
 }
