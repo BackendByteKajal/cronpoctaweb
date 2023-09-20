@@ -1,7 +1,7 @@
 import { Builder } from "builder-pattern";
 import { Booking } from "../../entities/booking-entity";
 import { BookingRoomDto } from "../request/booking-dto";
-import { UserLogin } from "../../entities/userlogin-entity";
+
 import { BookingRoomWithUserDto } from "../request/booking-dto";
 
 export class BookingResponseObj extends BookingRoomDto {

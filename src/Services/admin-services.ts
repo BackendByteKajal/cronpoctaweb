@@ -15,13 +15,11 @@ import moment from "moment";
 dotenv.config({ path: ".env" });
 
 export class AdminServices {
-  
   public static async addMeetRoom(data: any) {
     try {
-      console.log("addmettservice");
-      console.log(data);
+     
       const result = await MeetingRoom.create(data).save();
-      console.log("data");
+      
       const response = MeetRoomObject.convertMeetRoomToObj(result);
       return response;
     } catch (err: any) {
@@ -42,39 +40,12 @@ export class AdminServices {
   }
 
  
-
-  public static async doEditMeetRoom(
-    meetRoomId: number,
-    roomDetails: MeetRoomDto
-  ) {
-    try {
-      console.log("services......");
-      const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
-      console.log(meetRoom, ".....");
-      if (!meetRoom) {
-        throw { status: 404, message: "Meeting Room Does not Exists" };
-      }
-      const meetRoomObj = MeetRoomObject.convertMeetRoomToObj(meetRoom);
-      const editedMeetingData = {
-        ...meetRoomObj,
-        ...roomDetails,
-      };
-      const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
-      await MeetingRoom.update(meetRoomId, data);
-      
-      return meetRoom;
-    } catch (err: any) {
-      throw err;
-    }
-  }
-
-  //
+  // Edit Meeting Room
   public static async doEditRoom(meetRoomId: number, roomDetails: MeetingRoom) {
     try {
-      console.log("services......");
-      console.log(roomDetails, "roomdetail");
+      
       const meetRoom: any = await MeetingRoom.findOneBy({ id: meetRoomId });
-      console.log(meetRoom, ".....");
+      
       if (!meetRoom) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
@@ -84,17 +55,37 @@ export class AdminServices {
         ...roomDetails,
       };
       const data = MeetingRoom.fromAdminMeetRoom(editedMeetingData);
-      console.log("data", data);
+      
       await MeetingRoom.update(meetRoomId, data);
       const response: any = await MeetingRoom.findOneBy({ id: meetRoomId });
+      
+      if (response.status == "InActive") {
+        
+        await Booking.update(
+          { meetroom_id: meetRoomId }, // Condition to find the user
+          {
+            status: "InActive",
+          }
+        );
+      } else {
+        
+        await Booking.update(
+          { meetroom_id: meetRoomId }, // Condition to find the user
+          {
+            status: "Active",
+          }
+        );
+      }
+
       return response;
     } catch (err: any) {
       throw err;
     }
   }
+  //meeting room history
   public static async getMeetRoomHistory(meetRoomId: number) {
     try {
-      console.log("getmeethistory");
+      
       const meetRoomHistory = await Booking.findBy({ meetroom_id: meetRoomId });
 
       if (meetRoomHistory.length == 0) {
@@ -130,7 +121,7 @@ export class AdminServices {
       throw err;
     }
   }
-
+  //upload image
   public static async upload(data: string, imgpath: string) {
     cloudinary.v2.config({
       cloud_name: process.env.CLOUD_NAME,
@@ -141,11 +132,9 @@ export class AdminServices {
 
     if (data) {
       try {
-       
         const uploadResult = await cloudinary.v2.uploader.upload(imgpath);
 
         const imageUrl = uploadResult.secure_url;
-        
 
         return imageUrl;
       } catch (err) {
@@ -162,6 +151,13 @@ export class AdminServices {
       const roomData = await MeetingRoom.findOneBy({ id: roomId });
       if (roomData) {
         await MeetingRoom.delete(roomId);
+        
+        await Booking.update(
+          { meetroom_id: roomId }, // Condition to find the user
+          {
+            status: "Inactive",
+          }
+        );
 
         return MeetRoomObject.convertMeetRoomToObj(roomData);
       }
@@ -170,6 +166,7 @@ export class AdminServices {
       throw err;
     }
   }
+  //fetch room with id
   public static async fetchRoomWithId(roomId: number) {
     try {
       const roomData = await MeetingRoom.findOneBy({ id: roomId });

@@ -2,6 +2,7 @@ import { Context } from "koa";
 import {
   MeetRoomDto,
   MeetRoomDtobody,
+  MeetingRoomDtobody,
 } from "../dtos/request/admin-meetroom-dto";
 import { AdminServices } from "../Services/admin-services";
 import { Utils } from "../utils/utils";
@@ -33,20 +34,16 @@ export class AdminController {
       };
       
         const file = ctx.request.files;
-        console.log(file, "file...");
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
-        console.log(data, "data...");
         const imgpath = data.imageurl.filepath;
         var imgurl = await AdminServices.upload(data, imgpath); //upload call
-        console.log(imgurl, "imgurl...........");
         const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
         const result = await AdminServices.addMeetRoom(meetingRoomData);
         ctx.body = Utils.successResponse(Message.MeetRoomAdded, result);
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
-      console.log("errr", err);
       ctx.body = Utils.errorResponse(status, err);
     }
   }
@@ -70,23 +67,8 @@ export class AdminController {
 
  
 
-  public static async editMeetRoom(ctx: Context) {
-    try {
-      const param = ctx.params.id;
-      const dataToEdit = ctx.request.body as MeetRoomDto;
-      const result = await AdminServices.doEditMeetRoom(
-        Number(param),
-        dataToEdit
-      );
-
-      ctx.body = Utils.successResponse("Meeting Data Updated", result);
-    } catch (err: any) {
-      const status = err.status || 400;
-      ctx.status = status;
-      ctx.body = Utils.errorResponse(status, err.message);
-    }
-  }
-
+  
+//Edit Room
   public static async editRoom(ctx: Context) {
     try {
       const param = ctx.params.id;
@@ -97,13 +79,14 @@ export class AdminController {
       }
 
       const image = roomData?.image_url as string;
-      const { meetRoomName, capacity } = ctx.request.body as MeetRoomDtobody;
+      const { meetRoomName, capacity, status } = ctx.request.body as MeetingRoomDtobody;
 
       const obj = {
         meetRoomName: meetRoomName,
         capacity: capacity,
+        status:status
       };
-      
+    
       const file = ctx.request.files;
       if (!file) {
         throw new Error("pass image..");
@@ -115,7 +98,6 @@ export class AdminController {
       } else {
         
         const file = ctx.request.files;
-        console.log(file, "file...");
         const form = JSON.stringify(file);
         const data = JSON.parse(form);
         const imgpath = data.imageurl.filepath;
@@ -125,21 +107,18 @@ export class AdminController {
     
 
       const meetingRoomData = Mapper.meetingMapper(obj, imgurl); //mapper
-      console.log("mapper", meetingRoomData);
       const result = await AdminServices.doEditRoom(
         Number(param),
         meetingRoomData
       );
-      console.log(result, "result....");
       ctx.body = Utils.successResponse("Meeting Data Updated", result);
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;
-      console.log("errr", err);
       ctx.body = Utils.errorResponse(status, err);
     }
   }
-  //meetroomhistory
+  //meetroom history
   public static async meetRoomHistory(ctx: Context) {
     try {
       const meetRoomId = ctx.params.id;
@@ -179,12 +158,10 @@ export class AdminController {
 
   public static async fetchRoomById(ctx: Context) {
     try {
-      console.log("fetch room");
+      
       const id = ctx.params.id;
-      console.log("id", id);
       const Response = await AdminServices.fetchRoomWithId(Number(id));
-
-      ctx.body = Utils.successResponse(Message.FetchRoom, Response);
+     ctx.body = Utils.successResponse(Message.FetchRoom, Response);
     } catch (err: any) {
       const status = err.status || 400;
       ctx.status = status;

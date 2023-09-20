@@ -10,17 +10,15 @@ const jwt = require("jsonwebtoken");
 
 export class AuthenticateMiddleware {
   public static async AuthenticateUser(ctx: Context, next: any) {
-    console.log("autheticateuser");
-
     try {
       const accessToken = ctx.headers.authorization;
-      console.log("user authenticate");
+
       if (!accessToken) {
         throw new Error("You are not Authenticated..........");
       }
       if (ctx.headers.authorization) {
         const accessToken = ctx.headers.authorization;
-        console.log(accessToken, "accesstoken");
+
         if (!accessToken) {
           throw new Error("You are not Authenticated.");
         }
@@ -34,11 +32,10 @@ export class AuthenticateMiddleware {
         if (!cachedData) {
           throw new Error("You are not Authenticated......");
         }
-        console.log(cachedData, "cachedata");
+
         const decode = jwt.verify(token, configData.jwt.key);
 
         ctx.state.me = JSON.parse(cachedData);
-        console.log("ctx.state.me", ctx.state.me);
       }
 
       await next();

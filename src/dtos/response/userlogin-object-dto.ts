@@ -1,7 +1,7 @@
 import { Builder } from "builder-pattern";
-import { User } from "../../entities/user-entity";
+//import { User } from "../../entities/user-entity";
 import { userInfo } from "os";
-import { UserLogin } from "../../entities/userlogin-entity";
+import { User } from "../../entities/user-entity";
 
 export class UserLoginObject {
   id: number;
@@ -11,9 +11,9 @@ export class UserLoginObject {
   is_verified: boolean;
   authtoken: string;
   googleid: number;
-  guestName:string;
+  guestName: string;
 
-  public static convertToObj(userObj: UserLogin): UserLoginObject {
+  public static convertToObj(userObj: User): UserLoginObject {
     const resp = Builder<UserLoginObject>()
       .id(userObj.id)
       .email(userObj.email)
@@ -24,7 +24,7 @@ export class UserLoginObject {
 
     return resp.build();
   }
-  public static convertToObj1(userObj: UserLogin): UserLoginObject {
+  public static convertToObj1(userObj: User): UserLoginObject {
     const resp = Builder<UserLoginObject>()
       //.guestName(`${userObj.user_name} ${userObj.last_name}`)
       .guestName(userObj.email);
