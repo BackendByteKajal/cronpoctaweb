@@ -8,12 +8,14 @@ import { BookMeetRoomValidations } from "./bookroom-valication";
 export class AccessValidation {
   public static async editDeleteValidation(ctx: Context, next: Next) {
     try {
+    
       const bookingId = ctx.params.id;
       const loggedUserData: any = ctx.request.body;
       const loggedUserId = ctx.state.me.id;
       const booking: any = await Booking.findOneBy({ id: bookingId });
-      if(!booking){
-        throw new Error("Booking with this ID not found")
+      
+      if (!booking) {
+        throw new Error("Booking with this ID not found");
       }
       const data = BookingResponseObj.convertBookingToObj(booking);
       if (data.userId == loggedUserId) {
@@ -24,42 +26,43 @@ export class AccessValidation {
           booking.start_time
         );
         const result = BookMeetRoomValidations.dateValidation(booking.date);
-        if(loggedUserData.date){
-         const checkDate = BookMeetRoomValidations.dateValidation(loggedUserData.date);
-         if(checkDate == -1){
-          throw new Error("Please enter valid date");
-         }
-         const checkTiming = AccessValidation.editDeletePossibility(
-          current_time,
-          loggedUserData.startTime
-        );
-        if(checkTiming == false && checkDate != 1 ){
-          throw new Error("Please enter valid time");
-        }
-
-         
+        if (loggedUserData.date) {
+          const checkDate = BookMeetRoomValidations.dateValidation(
+            loggedUserData.date
+          );
+          if (checkDate == -1) {
+            throw new Error("Please enter valid date......");
+          }
+          const checkTiming = AccessValidation.editDeletePossibility(
+            current_time,
+            loggedUserData.startTime
+          );
+          // if (checkTiming == false && checkDate != 1) {
+          //   throw new Error("Please enter valid time#########");
+          // }
         }
         if (result == -1) {
-          throw new Error("Cannot Edit or Delete booking now");
-        } else if (compareTiming == false && result != 1) {
-          throw new Error("Cannot Edit or Delete booking now");
-        }
+          throw new Error("Cannot Edit or Delete booking now....");
+        }/* else if (compareTiming == false && result != 1) {
+          throw new Error("Cannot Edit or Delete booking now..");
+        }*/
 
         return next();
       }
       throw new Error("You do not have access to this booking");
     } catch (err: any) {
-      // console.log(err);
+      
       ctx.status = 400;
       ctx.body = Utils.errorResponse(400, err.message);
     }
   }
+  
 
   public static getCurrentTime() {
     const todaysDate = new Date();
     const hours = todaysDate.getHours().toString().padStart(2, "0");
     const minutes = todaysDate.getMinutes().toString().padStart(2, "0");
-
+    console.log(`${hours}:${minutes}`);
     return `${hours}:${minutes}`;
   }
 
@@ -74,5 +77,13 @@ export class AccessValidation {
       return false;
     }
     return true;
+  }
+  
+  public static isBookingFuture(endTime: string) {
+    const currentTime = AccessValidation.getCurrentTime();
+    const currentMoment = moment(currentTime, "HH:mm");
+    const endMoment = moment(endTime, "HH:mm");
+
+    return endMoment.isAfter(currentMoment);
   }
 }

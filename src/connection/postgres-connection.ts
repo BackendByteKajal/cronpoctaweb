@@ -3,6 +3,7 @@ import { configData } from "../config/config";
 
 export class PostgresDbConnection {
   public static connect() {
+    console.log("posgreass");
     const pgConnection: DataSource = new DataSource({
       type: "postgres",
       host: configData.pg.host,
@@ -14,7 +15,7 @@ export class PostgresDbConnection {
       entities: configData.pg.entities,
       // logging: true,
       schema: configData.pg.schema,
-      ssl:true
+      //ssl:true
     });
     console.log(typeof pgConnection);
     pgConnection

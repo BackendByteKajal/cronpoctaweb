@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
+console.log("config", process.env.PG_HOST);
 export const configData = {
   pg: {
     host: process.env.PG_HOST,
@@ -14,9 +15,9 @@ export const configData = {
   },
   redis: {
     host: process.env.REDIS_HOST,
-    port:process.env.REDIS_PORT
+    port: process.env.REDIS_PORT,
   },
   jwt: {
-    key: process.env.JWT_KEY
-  }
+    key: process.env.JWT_KEY,
+  },
 };

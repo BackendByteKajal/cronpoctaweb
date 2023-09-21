@@ -6,10 +6,7 @@ import { UserValidator } from "../Validator/validator";
 
 export class UserRoute {
   public static routes(router: Router) {
-
-    router.post(UserApiRoutes.Register,UserValidator.Register,UserController.userRegister);
-    router.get(UserApiRoutes.Users,UserController.Users);
-    router.patch(UserApiRoutes.UserVerification,UserController.userVerification)
-    
+   router.get(UserApiRoutes.Users, UserController.Users);
+   router.get(UserApiRoutes.GetAllGuests, UserController.getAllGuests);
   }
 }

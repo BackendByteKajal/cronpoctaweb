@@ -11,15 +11,13 @@ export class BookRoute {
   public static routes(router: Router) {
     router.post(
       BookingApiRoute.BookMeetRoom,
-      BookMeetRoomValidations.bookMeetRoom,
+
       AuthenticateMiddleware.AuthenticateUser,
+      BookMeetRoomValidations.bookMeetRoom,
+
       BookingController.addBooking
     );
-    router.get(
-      BookingApiRoute.Bookings,
-      AuthenticateMiddleware.AuthenticateUser,
-      BookingController.activeBookings
-    );
+    router.get(BookingApiRoute.Bookings, BookingController.activeBookings);
     router.get(
       BookingApiRoute.MyBookings,
       AuthenticateMiddleware.AuthenticateUser,
@@ -29,7 +27,19 @@ export class BookRoute {
       BookingApiRoute.EditBooking,
       AuthenticateMiddleware.AuthenticateUser,
       AccessValidation.editDeleteValidation,
+      BookMeetRoomValidations.bookMeetRoom,
       BookingController.editBooking
+    );
+
+    router.get(
+      BookingApiRoute.FETCHBOOKINGWITHID,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.fetchBookingWithId
+    );
+    router.get(
+      BookingApiRoute.FETCHBOOKINGWITHUSERID,
+      AuthenticateMiddleware.AuthenticateUser,
+      BookingController.fetchBookingWithUserId
     );
     router.delete(
       BookingApiRoute.DeleteBooking,

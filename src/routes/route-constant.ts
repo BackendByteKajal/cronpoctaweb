@@ -1,17 +1,24 @@
 export const AuthApiRoutes = {
   Login:"/login",
-  AdminLogin:"/admin/login"
+  AdminLogin:"/admin/login",
+  Googlelogin:"/google",
+  Callback:"/google/callback"
 };
 
 export const UserApiRoutes = {
   Register:"/register",
   Users:"/users",
-  UserVerification:"/user/:id/verify"
-  // UserVerification:"/home"
+  UserVerification:"/user/:id/verify",
+  GetAllGuests:"/getallguests",
+  UserVerified:"/userverified/:id"
 }
 
 export const AdminApiRoutes = {
-  MeetRoom:"/meetrooms/:id"
+  MeetRoom:"/meetrooms/:id",
+  EditRoom:"/editroom/:id",
+  DeleteRoom:"/deleteroom/:id",
+  FetchRoom:"/fetchroom/:id"
+  
 }
 
 export const PingApiRoute = {
@@ -26,8 +33,10 @@ export const BookingApiRoute = {
   BookMeetRoom: "/bookroom",
   Bookings:"/bookings",
   MyBookings:"/mybookings",
-  EditBooking:"/bookings/:id",
-  DeleteBooking:"/bookings/:id"
+  EditBooking:"/editbookings/:id",
+  DeleteBooking:"/deletebookings/:id",
+  FETCHBOOKINGWITHID:"/fetchBookingWithId/:id",
+  FETCHBOOKINGWITHUSERID:"/fetchbookingwithuserid"
 }
 
 export const RouteVersion = {

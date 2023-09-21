@@ -1,11 +1,19 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import { Builder } from "builder-pattern";
 import { RegisterUserDto } from "../dtos/request/user-register-dto";
 import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { type } from "os";
 
 @Entity()
-export class Booking extends BaseEntity{
-
+export class Booking extends BaseEntity {
   private _id: number;
   private _user_id: number;
   private _meetroom_id: number;
@@ -14,8 +22,9 @@ export class Booking extends BaseEntity{
   private _start_time: string;
   private _end_time: string;
   private _status: string;
-  private _guests: string;
+  private _guests: string[];
   private _description: string;
+  public _eventid: string;
 
   @PrimaryGeneratedColumn()
   public get id(): number {
@@ -73,7 +82,7 @@ export class Booking extends BaseEntity{
     this._end_time = end_time;
   }
 
-  @Column({default: "Inactive"})
+  @Column({ default: "Active" })
   public get status(): string {
     return this._status;
   }
@@ -81,20 +90,35 @@ export class Booking extends BaseEntity{
     this._status = status;
   }
 
-  @Column({nullable:true})
+  /* @Column({nullable:true})
   public get guests(): string {
     return this._guests;
   }
   public set guests(guests: string) {
     this._guests = guests;
+  }*/
+  @Column({ type: "jsonb", nullable: true })
+  public get guests(): string[] {
+    return this._guests;
+  }
+  public set guests(guests: string[]) {
+    this._guests = guests;
   }
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   public get description(): string {
     return this._description;
   }
   public set description(description: string) {
     this._description = description;
+  }
+
+  @Column({ nullable: true })
+  public get eventid(): string {
+    return this._eventid;
+  }
+  public set eventid(eventid: string) {
+    this._eventid = eventid;
   }
 
   @CreateDateColumn()
@@ -117,6 +141,8 @@ export class Booking extends BaseEntity{
       .status(bookingObj.status)
       .guests(bookingObj.guests)
       .description(bookingObj.description)
+      .eventid(bookingObj.eventid)
+
       .build();
 
     return obj;
