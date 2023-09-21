@@ -9,10 +9,13 @@ import cloudinary from "cloudinary";
 import koaBody from "koa-body";
 const swaggerUI = require("swagger-ui-koa");
 const YAML = require("yamljs");
+const path = require("path"); // Import the 'path' module
 
-const swaggerJSDocs = YAML.load(
-  "/home/cepl/Desktop/meet5/meeting-room-booking-system-backend-api/src/api.yml"
-);
+// Construct the absolute path to your YAML file
+const yamlFilePath = path.join(__dirname, "api.yml");
+
+// Load the YAML file using the absolute path
+const swaggerJSDocs = YAML.load(yamlFilePath);
 
 const app = new Koa();
 const router = new Router();
