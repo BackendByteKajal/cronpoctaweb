@@ -21,7 +21,8 @@ import nodemailer from "nodemailer";
 const apiKey = process.env.GOOGLE_API_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const CALLBACK_URL = `${process.env.URL}/google/callback`;
+const CALLBACK_URL = `${process.env.BACKEND_URL}/google/callback`;
+//const CALLBACK_URL = "/google/callback";
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 const calendar = google.calendar("v3"); // Create an instance of the Calendar service
 const oAuth2Client = new google.auth.OAuth2(
@@ -62,13 +63,13 @@ export class BookingServices {
           userId: userid,
         };
         const data = Booking.BookingRoomObj(bookRoomData);
-        
+
         // send calender notification
         const result = await calendarnotification(data, ctx);
 
         if (result.success) {
           const eventId = result.response?.id; // Event ID
-          
+
           const bookRoomdata = {
             ...bookRoomData,
 
@@ -76,13 +77,12 @@ export class BookingServices {
           };
           const data = Booking.BookingRoomObj(bookRoomdata);
           const response = await Booking.create(data).save();
-          
+
           const responseObj = BookingResponseObj.convertBookingToObj(response);
-         
+
           console.log("notification done");
           return responseObj;
         }
-        
       }
     } catch (err: any) {
       throw err;
@@ -199,7 +199,7 @@ export class BookingServices {
   public static async doDeleteBooking(bookingId: number, ctx: Context) {
     try {
       const booking: any = await Booking.findOneBy({ id: bookingId });
-      
+
       const eventiiid = booking._eventid;
       const redisvalue = await AuthenticateMiddleware.getrediseventid(
         bookingId
@@ -219,9 +219,9 @@ export class BookingServices {
           await Booking.delete(bookingId);
           //
           const Email = ctx.state.me.email;
-          
+
           const accesstoken = ctx.state.me.authtoken;
-        
+
           const guestsArray = bookingData.guests;
           // Send booking confirmation email
           if (guestsArray.length != 0) {
@@ -298,11 +298,10 @@ export class BookingServices {
     endTime: string
   ) {
     try {
-  
       const booking_room_details = await Booking.findBy({
         meetroom_id: MeetRoomId,
       });
-      
+
       if (booking_room_details.length == 0) {
         // return "Room is Available";
         return true;
@@ -389,12 +388,11 @@ export class BookingServices {
         newObj.userName = userNamedata ? userNamedata.user_name : null;
         newObj.lastName = userNamedata ? userNamedata.last_name : null;
         newObj.meetingRoomName = meetRoomData ? meetRoomData?.room_name : null;
-       
 
         return newObj;
       })
     );
-    
+
     return updatedArray;
   }
 
@@ -482,7 +480,7 @@ export class BookingServices {
         ...bookingDetails,
       };
       //check wheather slot is available or not
-      
+
       const result = await this.roomAvailabilityForEdit(
         editedBookingData.meetRoomId,
         editedBookingData.date,
@@ -520,7 +518,7 @@ export class BookingServices {
       const Roomdetail: MeetingRoom | null = await MeetingRoom.findOneBy({
         id: MeetRoomId,
       });
-     
+
       if (!Roomdetail) {
         throw { status: 404, message: "Meeting Room Does not Exists" };
       }
@@ -618,7 +616,6 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
       status: 404,
       message: "Booking Not Created",
     };
-    
   }
 }
 
@@ -636,8 +633,6 @@ function convertToISODate(dateString: string, timeString: string): string {
   const dateTime = new Date(year, month - 1, day, hour, minute);
   return dateTime.toISOString();
 }
-
-
 
 // Function to delete a calendar event
 async function deleteCalendarEvent(eventiid: string, ctx: Context) {
@@ -693,7 +688,6 @@ async function updateCalendarEventWithAttendees(
 
     const dataemail = event.data.attendees || []; // Ensure attendees is an array
 
-    
     const startdatetime = convertToISODate(
       editedData.date,
       editedData.startTime
@@ -883,7 +877,6 @@ async function sendEmailEdit(
   meetroomname: string,
   googlemeetlink: string
 ) {
-  
   try {
     oAuth2Client.setCredentials({
       access_token: access_token,
@@ -1003,4 +996,3 @@ async function sendEmaileRemoveguest(
     throw error;
   }
 }
-
