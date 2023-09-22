@@ -20,7 +20,8 @@ passportmodule.use(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.URL}/google/callback`,
+      callbackURL: `${process.env.BACKEND_URL}/google/callback`,
+      //callbackURL: "/google/callback",
     },
     async (
       accessToken: string,

@@ -25,18 +25,19 @@ export class AuthController {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
-  
+
   public static async handleGoogleCallback(ctx: Context) {
     try {
       // Access the user object and token from the Passport strategy
       const user = ctx.state.user;
       const token = ctx.state.authInfo;
       const userId = user.id;
-     await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
+
+      await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
       await AuthServices.setCookieAndReturnToken(ctx, "userdata", userId);
 
       // Redirect Url
-      const redirectURL = `${process.env.CLIENT_URL}/home?token=${token}&userId=${userId}`;
+      const redirectURL = `${process.env.CLIENT_URL}/home?token=${token}&userId=${userId}&userName=${user.userName}&lastname=${user.last_name}`;
 
       // Redirect the user to the generated URL
       ctx.redirect(redirectURL);

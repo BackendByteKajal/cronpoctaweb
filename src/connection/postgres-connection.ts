@@ -15,7 +15,7 @@ export class PostgresDbConnection {
       entities: configData.pg.entities,
       // logging: true,
       schema: configData.pg.schema,
-      //ssl:true
+      ssl:true
     });
     console.log(typeof pgConnection);
     pgConnection
