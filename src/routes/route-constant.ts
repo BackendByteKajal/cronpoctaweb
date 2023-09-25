@@ -10,7 +10,8 @@ export const UserApiRoutes = {
   Users:"/users",
   UserVerification:"/user/:id/verify",
   GetAllGuests:"/getallguests",
-  UserVerified:"/userverified/:id"
+  UserVerified:"/userverified/:id",
+  LogOut:"/logout"
 }
 
 export const AdminApiRoutes = {

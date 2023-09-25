@@ -44,7 +44,7 @@ app.use(
 
 AppRoutes.initAppRoutes(router);
 app.use(router.routes());
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Applistening on the port ${port}`);
 });
