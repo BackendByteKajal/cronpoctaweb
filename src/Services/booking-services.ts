@@ -22,7 +22,7 @@ const apiKey = process.env.GOOGLE_API_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = `${process.env.BACKEND_URL}/google/callback`;
-//const CALLBACK_URL = "/google/callback";
+//const CALLBACK_URL = "https://ba08-27-107-28-2.ngrok-free.app/google/callback";
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 const calendar = google.calendar("v3"); // Create an instance of the Calendar service
 const oAuth2Client = new google.auth.OAuth2(
@@ -201,11 +201,6 @@ export class BookingServices {
       const booking: any = await Booking.findOneBy({ id: bookingId });
 
       const eventiiid = booking._eventid;
-      const redisvalue = await AuthenticateMiddleware.getrediseventid(
-        bookingId
-      );
-      console.log(eventiiid, "eventiid");
-      const eventid = JSON.parse(redisvalue);
 
       // Retrieve the booking data from your database
       const bookingData = await Booking.findOneBy({ id: bookingId });
@@ -220,7 +215,9 @@ export class BookingServices {
           //
           const Email = ctx.state.me.email;
 
-          const accesstoken = ctx.state.me.authtoken;
+          //Access Token
+          const cachedData = await AuthenticateMiddleware.getredisData(Email);
+          const accesstoken = JSON.parse(cachedData);
 
           const guestsArray = bookingData.guests;
           // Send booking confirmation email
@@ -268,12 +265,6 @@ export class BookingServices {
     } catch (err: any) {
       throw err;
     }
-  }
-
-  public static async bookingDelete(bookid: any): Promise<any> {
-    const booking = await User.delete({ id: bookid });
-    //const userData1: User = User.fromRegisterObj(userData);
-    return booking;
   }
 
   public static async isMeetRoomExists(MeetRoomId: number) {
@@ -445,21 +436,18 @@ export class BookingServices {
     bookingDetails: BookingRoomDto,
     ctx: Context
   ) {
-    let eventiiid = "";
-    const accesstoken = ctx.state.me.authtoken;
+    let eventid = "";
+
     const email = ctx.state.me.email;
+
+    const cachedData = await AuthenticateMiddleware.getredisData(email);
+    const accesstoken = JSON.parse(cachedData);
     try {
-      const redisvalue = await AuthenticateMiddleware.getrediseventid(
-        bookingId
-      );
-
-      const eventid = JSON.parse(redisvalue);
-
       const bookings: Booking | null = await Booking.findOneBy({
         id: bookingId,
       });
       if (bookings) {
-        eventiiid = bookings._eventid;
+        eventid = bookings._eventid;
       }
 
       let booking: Booking | null = await Booking.findOneBy({ id: bookingId });
@@ -500,7 +488,7 @@ export class BookingServices {
         await sendEmaileRemoveguest(booking, accesstoken, email, bookingData);
         //update calender event
         const editevent = await updateCalendarEventWithAttendees(
-          eventiiid,
+          eventid,
           editedData,
           ctx
         );
@@ -532,13 +520,15 @@ export class BookingServices {
 //create calender notification
 
 async function calendarnotification(requestData: Booking, ctx: Context) {
-  const token = ctx.state.me.authtoken;
-
+    //Aceess Token
+  const Authemail = ctx.state.me.email;
+  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+  const accesstoken = JSON.parse(cachedData);
   oAuth2Client.setCredentials({
-    access_token: token,
+    access_token: accesstoken,
   });
 
-  oAuth2Client.credentials.access_token = token;
+  oAuth2Client.credentials.access_token = accesstoken;
   const Guest: any = requestData.guests;
 
   const GuestsEmail = Guest.map((guest: { guests: string }) => ({
@@ -596,7 +586,7 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
         if (roomName) {
           const emailSent = await sendEmail(
             requestData,
-            token,
+            accesstoken,
             Email,
             calenderurl,
             roomName,
@@ -637,7 +627,10 @@ function convertToISODate(dateString: string, timeString: string): string {
 // Function to delete a calendar event
 async function deleteCalendarEvent(eventiid: string, ctx: Context) {
   try {
-    const accessToken = ctx.state.me.authtoken;
+    //const accessToken = ctx.state.me.authtoken;
+    const Authemail = ctx.state.me.email;
+    const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+    const accessToken = JSON.parse(cachedData);
 
     oAuth2Client.setCredentials({
       access_token: accessToken,
@@ -671,7 +664,10 @@ async function updateCalendarEventWithAttendees(
   editedData: BookingResponseObj,
   ctx: Context
 ) {
-  const accessToken = ctx.state.me.authtoken;
+  //const accessToken = ctx.state.me.authtoken;
+  const Authemail = ctx.state.me.email;
+  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+  const accessToken = JSON.parse(cachedData);
 
   oAuth2Client.setCredentials({
     access_token: accessToken,

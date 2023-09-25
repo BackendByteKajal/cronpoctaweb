@@ -14,14 +14,14 @@ import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
 dotenv.config({ path: ".env" });
 const GOOGLE_CLIENT_ID: any = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET: any = process.env.GOOGLE_CLIENT_SECRET;
+const Google_callbackURL: any = process.env.BACKEND_URL;
 
 passportmodule.use(
   new GoogleStrategy(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_URL}/google/callback`,
-      //callbackURL: "/google/callback",
+      callbackURL: `${Google_callbackURL}/google/callback`,
     },
     async (
       accessToken: string,
@@ -29,11 +29,12 @@ passportmodule.use(
       profile: any,
       done: any
     ) => {
+      
       const data = {
         userName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
-        authtoken: accessToken,
+        //authtoken: accessToken,
         is_varified: profile.emails[0].verified,
       };
       const userdata: User | null = await UserServices.Registeruser(data);
@@ -43,6 +44,9 @@ passportmodule.use(
         console.log(profile);
         const token = AuthServices.createToken(user);
         AuthServices.redisCaching(user, token);
+        const Authemail = user.email;
+        AuthServices.redisCaching(accessToken, Authemail);
+        console.log(token, "token");
         done(null, user, token);
       }
     }

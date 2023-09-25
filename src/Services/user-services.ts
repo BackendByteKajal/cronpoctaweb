@@ -19,12 +19,12 @@ export class UserServices {
       const user: User = await User.create(saveUser).save();
       return user;
     } else {
-      await User.update(
-        { email: userData.email }, // Condition to find the user
-        {
-          authtoken: userData.authtoken,
-        }
-      );
+      // await User.update(
+      //   { email: userData.email }, // Condition to find the user
+      //   {
+      //     authtoken: userData.authtoken,
+      //   }
+      // );
       const user: User | null = await User.findOne({
         where: { email: userData.email },
       });
@@ -68,5 +68,13 @@ export class UserServices {
       return false;
     }
     return true;
+  }
+
+  //logout
+  public static async deleteToken(Token: any, ctx: Context) {
+    let [bearer, token] = Token.split(" ");
+    const redisObj = await RedisCache.connect();
+    redisObj.del(token);
+    console.log(token, "token...");
   }
 }

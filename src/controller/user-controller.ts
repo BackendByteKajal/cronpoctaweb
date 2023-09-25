@@ -41,4 +41,17 @@ export class UserController {
       ctx.body = Utils.errorResponse(status, err.message);
     }
   }
+  
+//logout
+  public static async removeToken(ctx: Context) {
+    let Token = ctx.header.authorization;
+    console.log(Token,"token")
+    try {
+      const response = await UserServices.deleteToken(Token, ctx);
+      ctx.body = Utils.successResponse("Logged Out Succesfully", {});
+      ctx.response.status = 200;
+    } catch (error: any) {
+      ctx.body = Utils.errorResponse(400, error.message);
+    }
+  }
 }

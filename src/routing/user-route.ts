@@ -8,5 +8,6 @@ export class UserRoute {
   public static routes(router: Router) {
    router.get(UserApiRoutes.Users, UserController.Users);
    router.get(UserApiRoutes.GetAllGuests, UserController.getAllGuests);
+    router.post(UserApiRoutes.LogOut, UserController.removeToken);
   }
 }

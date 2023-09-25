@@ -20,7 +20,7 @@ export class UserLoginObject {
       .userName(userObj.user_name)
       .last_name(userObj.last_name)
       .is_verified(userObj.is_verified)
-      .authtoken(userObj.authtoken);
+      //.authtoken(userObj.authtoken);
 
     return resp.build();
   }
