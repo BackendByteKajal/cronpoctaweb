@@ -30,6 +30,10 @@ pipelines:
           deployment: Development
           image: alpine
           script:
+            - export AWS_REGION=$AWS_DEFAULT_REGION
+            - export AWS_ROLE_ARN=$AWS_ROLE_ARN
+            - export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
             - apk add --no-cache aws-cli openssh-client
             - aws secretsmanager get-secret-value --secret-id meetingroom-poc-dev-ssh-key --query 'SecretString' --output text > key.pem
             - eval $(ssh-agent -s)
