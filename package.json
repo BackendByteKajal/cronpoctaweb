@@ -63,7 +63,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "NODE_OPTIONS=--max-old-space-size=4096 ts-node-dev src/app.ts"
+    "start": "NODE_OPTIONS=--max-old-space-size=1024 ts-node-dev src/app.ts"
   },
   "author": "Pratik Patil",
   "license": "ISC"
