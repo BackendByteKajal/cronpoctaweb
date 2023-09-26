@@ -31,7 +31,7 @@ pipelines:
           image: alpine
           script:
             - apk add --no-cache aws-cli openssh-client
-            - aws secretsmanager get-secret-value --secret-id dev-ssh-key --query 'SecretString' --output text > key.pem
+            - aws secretsmanager get-secret-value --secret-id meetingroom-poc-dev-ssh-key --query 'SecretString' --output text > key.pem
             - eval $(ssh-agent -s)
             - cat key.pem | tr -d '\r' | ssh-add -
             - mkdir -p ~/.ssh
