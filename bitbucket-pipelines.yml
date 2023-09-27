@@ -1,0 +1,51 @@
+clone:
+  depth: full
+image: node:14
+
+pipelines:
+
+  branches:
+    development:
+      - step:
+          name: Build and Push Docker Image
+          oidc: true
+          image: atlassian/pipelines-awscli
+          script:
+            - export AWS_REGION=$AWS_DEFAULT_REGION
+            - export AWS_ROLE_ARN=$AWS_ROLE_ARN
+            - export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
+            - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+            - echo $IMAGE_REPO_NAME
+            - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com 
+            - docker build -t $IMAGE_REPO_NAME:$DEV_IMAGE_TAG .
+            - docker tag $IMAGE_REPO_NAME:$DEV_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$DEV_IMAGE_TAG
+            - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$DEV_IMAGE_TAG
+          services:
+            - docker
+          
+      - step:
+          name: Deployment to Dev Server
+          oidc: true
+          deployment: Development
+          image: alpine
+          script:
+            - export AWS_REGION=$AWS_DEFAULT_REGION
+            - export AWS_ROLE_ARN=$AWS_ROLE_ARN
+            - export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token
+            - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
+            - apk add --no-cache aws-cli openssh-client
+            - aws secretsmanager get-secret-value --secret-id meetingroom-poc-dev-ssh-key --query 'SecretString' --output text > key.pem
+            - eval $(ssh-agent -s)
+            - cat key.pem | tr -d '\r' | ssh-add -
+            - mkdir -p ~/.ssh
+            - chmod 700 ~/.ssh
+            - ssh -o StrictHostKeyChecking=no $USER@$HOST "cd /home/ubuntu/meeting_room; ./script.sh; sudo docker compose pull; sudo docker compose up -d"
+           
+
+
+
+
+
+
+
