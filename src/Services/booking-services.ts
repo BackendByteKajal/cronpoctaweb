@@ -815,7 +815,7 @@ async function sendEmail(
     const mailOptions = {
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
-      subject: `Meeting Invitation: ${bookingDetails.title}`,
+      subject: `meeting invitation: ${bookingDetails.title}`,
       text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
