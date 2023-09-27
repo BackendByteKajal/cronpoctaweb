@@ -22,7 +22,7 @@ const apiKey = process.env.GOOGLE_API_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = `${process.env.BACKEND_URL}/google/callback`;
-//const CALLBACK_URL = "https://ba08-27-107-28-2.ngrok-free.app/google/callback";
+//const CALLBACK_URL = "/google/callback";
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 const calendar = google.calendar("v3"); // Create an instance of the Calendar service
 const oAuth2Client = new google.auth.OAuth2(
@@ -535,12 +535,12 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
     email: guest.guests,
   }));
 
-  const eventStartTime = convertToISODate(
+  const eventStartTime = convertToUTCISODate(
     requestData.date,
     requestData.start_time
   );
 
-  const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
+  const eventEndTime = convertToUTCISODate(requestData.date, requestData.end_time);
 
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
@@ -609,18 +609,32 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   }
 }
 
-//conver to ISODate
-function convertToISODate(dateString: string, timeString: string): string {
+// //conver to ISODate
+// function convertToISODate(dateString: string, timeString: string): string {
+//   const dateParts = dateString.split("/");
+//   const year = parseInt(dateParts[2]);
+//   const month = parseInt(dateParts[1]);
+//   const day = parseInt(dateParts[0]);
+
+//   const timeParts = timeString.split(":");
+//   const hour = parseInt(timeParts[0]);
+//   const minute = parseInt(timeParts[1]);
+
+//   const dateTime = new Date(year, month - 1, day, hour, minute);
+//   return dateTime.toISOString();
+// }
+
+function convertToUTCISODate(dateString: string, timeString: string): string {
   const dateParts = dateString.split("/");
   const year = parseInt(dateParts[2]);
-  const month = parseInt(dateParts[1]);
+  const month = parseInt(dateParts[1]) - 1; // Adjust for zero-based month
   const day = parseInt(dateParts[0]);
 
   const timeParts = timeString.split(":");
   const hour = parseInt(timeParts[0]);
   const minute = parseInt(timeParts[1]);
 
-  const dateTime = new Date(year, month - 1, day, hour, minute);
+  const dateTime = new Date(Date.UTC(year, month, day, hour, minute));
   return dateTime.toISOString();
 }
 
@@ -684,12 +698,12 @@ async function updateCalendarEventWithAttendees(
 
     const dataemail = event.data.attendees || []; // Ensure attendees is an array
 
-    const startdatetime = convertToISODate(
+    const startdatetime = convertToUTCISODate(
       editedData.date,
       editedData.startTime
     );
 
-    const enddatetime = convertToISODate(editedData.date, editedData.endTime);
+    const enddatetime = convertToUTCISODate(editedData.date, editedData.endTime);
 
     const Guest: any = editedData.guests;
     const newAttendees = Guest.map((guest: { guests: string }) => ({
