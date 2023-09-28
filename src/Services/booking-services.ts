@@ -535,32 +535,17 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
     email: guest.guests,
   }));
 
-  // const eventStartTime = convertToUTCISODate(
-  //   requestData.date,
-  //   requestData.start_time
-  // );
-
-  // const eventEndTime = convertToUTCISODate(requestData.date, requestData.end_time);
-
-  //
-  const offset: any = process.env.REGION_NAME;
   const eventStartTime = convertToISODate(
     requestData.date,
-    requestData.start_time,
-    offset
+    requestData.start_time
   );
 
-  const eventEndTime = convertToISODate(
-    requestData.date,
-    requestData.end_time,
-    offset
-  );
-  //
+  const eventEndTime = convertToISODate(requestData.date, requestData.end_time);
 
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
   const roomName = meetroom?.room_name;
-
+  const timezone = "Asia/Kolkata";
   try {
     const response = await calendar.events.insert({
       calendarId: "primary",
@@ -574,11 +559,11 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
 
         start: {
           dateTime: eventStartTime,
-          timeZone: offset,
+          timeZone: timezone,
         },
         end: {
           dateTime: eventEndTime,
-          timeZone: offset,
+          timeZone: timezone,
         },
         attendees: GuestsEmail,
         conferenceData: {
@@ -624,26 +609,8 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   }
 }
 
-// //conver to ISODate
-// function convertToISODate(dateString: string, timeString: string): string {
-//   const dateParts = dateString.split("/");
-//   const year = parseInt(dateParts[2]);
-//   const month = parseInt(dateParts[1]);
-//   const day = parseInt(dateParts[0]);
-
-//   const timeParts = timeString.split(":");
-//   const hour = parseInt(timeParts[0]);
-//   const minute = parseInt(timeParts[1]);
-
-//   const dateTime = new Date(year, month - 1, day, hour, minute);
-//   return dateTime.toISOString();
-// }
-
-function convertToISODate(
-  dateString: string,
-  timeString: string,
-  timeZone: string
-): string {
+//conver to ISODate
+function convertToISODate(dateString: string, timeString: string): string {
   const dateParts = dateString.split("/");
   const year = parseInt(dateParts[2]);
   const month = parseInt(dateParts[1]);
@@ -653,21 +620,8 @@ function convertToISODate(
   const hour = parseInt(timeParts[0]);
   const minute = parseInt(timeParts[1]);
 
-  // Create a Date object with the specified date and time
-  const dateTime = new Date(year, month - 1, day, hour, minute + 1);
-
-  // Set the time zone
-  dateTime.setTime(dateTime.getTime() + timeZoneOffset(timeZone));
-
+  const dateTime = new Date(year, month - 1, day, hour, minute);
   return dateTime.toISOString();
-}
-
-// Calculate the time zone offset in milliseconds
-function timeZoneOffset(timeZone: string): number {
-  const now: any = new Date();
-  const timeZoneDate: any = new Date(now.toLocaleString("en-US", { timeZone }));
-  const timeZoneOffsetMs = timeZoneDate - now;
-  return timeZoneOffsetMs;
 }
 
 // Function to delete a calendar event
@@ -730,24 +684,12 @@ async function updateCalendarEventWithAttendees(
 
     const dataemail = event.data.attendees || []; // Ensure attendees is an array
 
-    // const startdatetime = convertToUTCISODate(
-    //   editedData.date,
-    //   editedData.startTime
-    // );
-
-    // const enddatetime = convertToUTCISODate(editedData.date, editedData.endTime);
-    const offset: any = process.env.REGION_NAME;
-    const eventStartTime = convertToISODate(
+    const startdatetime = convertToISODate(
       editedData.date,
-      editedData.startTime,
-      offset
+      editedData.startTime
     );
 
-    const eventEndTime = convertToISODate(
-      editedData.date,
-      editedData.endTime,
-      offset
-    );
+    const enddatetime = convertToISODate(editedData.date, editedData.endTime);
 
     const Guest: any = editedData.guests;
     const newAttendees = Guest.map((guest: { guests: string }) => ({
@@ -759,19 +701,19 @@ async function updateCalendarEventWithAttendees(
     });
 
     const roomName = meetroom?.room_name;
-
+    const timezone = "Asia/Kolkata";
     const updateevevent = {
       summary: editedData.title,
       conferenceDataVersion: 1,
       key: apiKey,
       description: `MeetroomName:${roomName} Description:${editedData.description}`,
       start: {
-        dateTime: eventStartTime,
-        timeZone: offset,
+        dateTime: startdatetime,
+        timeZone: timezone,
       },
       end: {
-        dateTime: eventEndTime,
-        timeZone: offset,
+        dateTime: enddatetime,
+        timeZone: timezone,
       },
       attendees: newAttendees, // Update attendees here
       // Add or modify any other event properties as needed
@@ -859,7 +801,7 @@ async function sendEmail(
     const mailOptions = {
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
-      subject: `Meeting Invitation: ${bookingDetails.title}`,
+      subject: `Meeting Invitations: ${bookingDetails.title}`,
       text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
