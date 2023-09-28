@@ -22,7 +22,7 @@ passportmodule.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL: `${Google_callbackURL}/google/callback`,
-      //callbackURL:'/google/callback',
+      //callbackURL: "/google/callback",
     },
     async (
       accessToken: string,
