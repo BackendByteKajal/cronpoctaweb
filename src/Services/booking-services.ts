@@ -543,7 +543,7 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   // const eventEndTime = convertToUTCISODate(requestData.date, requestData.end_time);
 
   //
-  const offset: any = process.env.OFFSET;
+  const offset: any = process.env.REGION_NAME;
   const eventStartTime = convertToISODate(
     requestData.date,
     requestData.start_time,
@@ -736,7 +736,7 @@ async function updateCalendarEventWithAttendees(
     // );
 
     // const enddatetime = convertToUTCISODate(editedData.date, editedData.endTime);
-    const offset: any = process.env.OFFSET;
+    const offset: any = process.env.REGION_NAME;
     const eventStartTime = convertToISODate(
       editedData.date,
       editedData.startTime,
