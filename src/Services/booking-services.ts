@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { BookingRoomDto,BookingRoom } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
@@ -33,9 +33,12 @@ const oAuth2Client = new google.auth.OAuth2(
 
 export class BookingServices {
   public static async bookMeetRoom(
-    bookingDetails: BookingRoomDto,
+    bookingDetails: BookingRoom,
     ctx: Context
   ) {
+    const calstart=bookingDetails.clstartTime;
+    const calend=bookingDetails.clendTime;
+    
     const userid = ctx.state.me.id;
     try {
       const {
@@ -47,6 +50,7 @@ export class BookingServices {
         endTime,
         status,
         guests,
+        
       } = bookingDetails;
 
       await this.isMeetRoomExists(meetRoomId);
@@ -63,9 +67,9 @@ export class BookingServices {
           userId: userid,
         };
         const data = Booking.BookingRoomObj(bookRoomData);
-
+     const calenderstarttime=bookingDetails.clstartTime;
         // send calender notification
-        const result = await calendarnotification(data, ctx);
+        const result = await calendarnotification(data, ctx,calstart,calend);
 
         if (result.success) {
           const eventId = result.response?.id; // Event ID
@@ -433,11 +437,12 @@ export class BookingServices {
 
   public static async doEditBookings(
     bookingId: number,
-    bookingDetails: BookingRoomDto,
+    bookingDetails: BookingRoom,
     ctx: Context
   ) {
     let eventid = "";
-
+   const startcal=bookingDetails.clstartTime;
+   const endcal=bookingDetails.clendTime;
     const email = ctx.state.me.email;
 
     const cachedData = await AuthenticateMiddleware.getredisData(email);
@@ -490,7 +495,7 @@ export class BookingServices {
         const editevent = await updateCalendarEventWithAttendees(
           eventid,
           editedData,
-          ctx
+          ctx,startcal,endcal
         );
         const room_name = await this.MeetRoomName(bookingDetails.meetRoomId);
 
@@ -519,7 +524,7 @@ export class BookingServices {
 
 //create calender notification
 
-async function calendarnotification(requestData: Booking, ctx: Context) {
+async function calendarnotification(requestData: Booking, ctx: Context,clstart:string,clend:string) {
   //Aceess Token
   const Authemail = ctx.state.me.email;
   const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
@@ -545,7 +550,7 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
   const roomName = meetroom?.room_name;
-  const timezone = "Asia/Kolkata";
+  const timezone = "";
   try {
     const response = await calendar.events.insert({
       calendarId: "primary",
@@ -558,11 +563,11 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
         description: `meetroomname:${roomName} meetdescription:${requestData.description}`,
 
         start: {
-          dateTime: eventStartTime,
+          dateTime: clstart,
           timeZone: timezone,
         },
         end: {
-          dateTime: eventEndTime,
+          dateTime: clend,
           timeZone: timezone,
         },
         attendees: GuestsEmail,
@@ -662,7 +667,9 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
 async function updateCalendarEventWithAttendees(
   eventid: string,
   editedData: BookingResponseObj,
-  ctx: Context
+  ctx: Context,
+  starcal:string,
+  endcal:string
 ) {
   //const accessToken = ctx.state.me.authtoken;
   const Authemail = ctx.state.me.email;
@@ -701,18 +708,18 @@ async function updateCalendarEventWithAttendees(
     });
 
     const roomName = meetroom?.room_name;
-    const timezone = "Asia/Kolkata";
+    const timezone = "";
     const updateevevent = {
       summary: editedData.title,
       conferenceDataVersion: 1,
       key: apiKey,
       description: `MeetroomName:${roomName} Description:${editedData.description}`,
       start: {
-        dateTime: startdatetime,
+        dateTime: starcal,
         timeZone: timezone,
       },
       end: {
-        dateTime: enddatetime,
+        dateTime: endcal,
         timeZone: timezone,
       },
       attendees: newAttendees, // Update attendees here
