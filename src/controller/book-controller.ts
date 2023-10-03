@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { BookingRoom, BookingRoomDto } from "../dtos/request/booking-dto";
 import { BookingServices } from "../Services/booking-services";
 import { Utils } from "../utils/utils";
 import { Message } from "../constants/message";
@@ -8,9 +8,10 @@ import { isBefore, addHours, parseISO } from "date-fns";
 
 export class BookingController {
   public static async addBooking(ctx: Context) {
+  
     try {
-      const { guests, ...roomDetails } = ctx.request.body as BookingRoomDto;
-
+      const { guests, ...roomDetails } = ctx.request.body as BookingRoom;
+      
       const response = await BookingServices.bookMeetRoom(
         { ...roomDetails, guests },
         ctx
@@ -92,7 +93,7 @@ export class BookingController {
   public static async editBooking(ctx: Context) {
     try {
       const id = ctx.params.id;
-      const editedData = ctx.request.body as BookingRoomDto;
+      const editedData = ctx.request.body as BookingRoom;
       const editedResponse = await BookingServices.doEditBookings(
         Number(id),
         editedData,
