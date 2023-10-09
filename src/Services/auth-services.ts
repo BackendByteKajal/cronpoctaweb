@@ -39,6 +39,7 @@ export class AuthServices {
 
   public static async isAdminExists(email: string) {
     try {
+      //const lowercaseEmail = email.toLowerCase();
       const user = await Admin.findOne({
         where: { email: email },
       });
@@ -67,15 +68,15 @@ export class AuthServices {
     redisObj.set(
       token,
       JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
+      //RedisSessionExpires.UserLogin
     );
   }
-  public static redisCachingauth(userData: any, token: string) {
+  public static redisCachingauth(userData: any, token: any) {
     const redisObj = RedisCache.connect();
     redisObj.set(
       token,
       JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
+      //RedisSessionExpires.UserLogin
     );
   }
 
