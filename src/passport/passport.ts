@@ -30,6 +30,8 @@ passportmodule.use(
       profile: any,
       done: any
     ) => {
+      console.log("accesstoken",accessToken)
+      console.log(refreshToken,"refreshToken")
       const data = {
         userName: profile.name.givenName,
         lastName: profile.name.familyName,
@@ -41,11 +43,19 @@ passportmodule.use(
 
       if (userdata) {
         let user = UserLoginObject.convertToObj(userdata);
-        console.log(profile);
+        console.log(profile)
+        
         const token = AuthServices.createToken(user);
         AuthServices.redisCaching(user, token);
         const Authemail = user.email;
+        const userid=user.id;
+        const id=userid.toString(); 
+        console.log(id)
         AuthServices.redisCaching(accessToken, Authemail);
+        if(refreshToken!=undefined){
+          AuthServices.redisCachingauth(refreshToken,id)
+
+        }
         console.log(token, "token");
         done(null, user, token);
       }

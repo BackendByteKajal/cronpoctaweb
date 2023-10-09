@@ -50,7 +50,7 @@ export class AuthenticateMiddleware {
 
   ///
 
-  public static async getredisData(token: string) {
+  public static async getredisData(token: any) {
     const redisObj = RedisCache.connect();
     const data = await redisObj.get(token);
     return data;
