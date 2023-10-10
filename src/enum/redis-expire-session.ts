@@ -1,3 +1,3 @@
 export const RedisSessionExpires = {
-    UserLogin: 3600
+    UserLogin: 18000
   };
