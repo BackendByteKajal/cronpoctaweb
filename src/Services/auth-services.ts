@@ -68,7 +68,7 @@ export class AuthServices {
     redisObj.set(
       token,
       JSON.stringify(userData),
-      //RedisSessionExpires.UserLogin
+      RedisSessionExpires.UserLogin
     );
   }
   public static redisCachingauth(userData: any, token: any) {
@@ -76,7 +76,7 @@ export class AuthServices {
     redisObj.set(
       token,
       JSON.stringify(userData),
-      //RedisSessionExpires.UserLogin
+      RedisSessionExpires.UserLogin
     );
   }
 
