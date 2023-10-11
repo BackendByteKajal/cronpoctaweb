@@ -216,13 +216,13 @@ export class BookingServices {
 
           const Email = ctx.state.me.email;
           //Access Token
-          const cachedData = await AuthenticateMiddleware.getredisData(Email);
+          const cachedData = await AuthServices.getredisData(Email);
           const accesstoken = JSON.parse(cachedData);
 
           //refresh Token
           const userid = ctx.state.me.id;
           const id = userid.toString();
-          const cachedDataref = await AuthenticateMiddleware.getredisData(id);
+          const cachedDataref = await AuthServices.getredisData(id);
           const refreshToken = JSON.parse(cachedDataref);
           console.log(refreshToken, "refreshtoken");
 
@@ -449,12 +449,12 @@ export class BookingServices {
     const endcal = bookingDetails.clendTime;
     const email = ctx.state.me.email;
 
-    const cachedData = await AuthenticateMiddleware.getredisData(email);
+    const cachedData = await AuthServices.getredisData(email);
     const accesstoken = JSON.parse(cachedData);
     //refresh Token
     const userid = ctx.state.me.id;
     const id = userid.toString();
-    const cachedDataref = await AuthenticateMiddleware.getredisData(id);
+    const cachedDataref = await AuthServices.getredisData(id);
 
     const refreshToken = JSON.parse(cachedDataref);
     console.log(refreshToken, "refreshtoken");
@@ -553,7 +553,7 @@ async function calendarnotification(
   console.log("calender");
   //Aceess Token
   const Authemail = ctx.state.me.email;
-  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+  const cachedData = await AuthServices.getredisData(Authemail);
 
   let accesstoken = JSON.parse(cachedData);
   //set creadential access token and refresh token
@@ -561,7 +561,7 @@ async function calendarnotification(
   //refresh Token
   const userid = ctx.state.me.id;
   const id = userid.toString();
-  const cachedDataref = await AuthenticateMiddleware.getredisData(id);
+  const cachedDataref = await AuthServices.getredisData(id);
   const refreshToken = JSON.parse(cachedDataref);
   console.log(refreshToken, "refreshtoken");
   oAuth2Client.credentials.refresh_token = refreshToken;
@@ -667,7 +667,7 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
   try {
     //const accessToken = ctx.state.me.authtoken;
     const Authemail = ctx.state.me.email;
-    const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+    const cachedData = await AuthServices.getredisData(Authemail);
     const accessToken = JSON.parse(cachedData);
 
     oAuth2Client.setCredentials({
@@ -679,7 +679,7 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
     //refresh Token
     const userid = ctx.state.me.id;
     const id = userid.toString();
-    const cachedDataref = await AuthenticateMiddleware.getredisData(id);
+    const cachedDataref = await AuthServices.getredisData(id);
     if (cachedDataref != undefined) {
       const refreshToken = JSON.parse(cachedDataref);
       console.log(refreshToken, "refreshtoken");
@@ -717,7 +717,7 @@ async function updateCalendarEventWithAttendees(
 ) {
   //const accessToken = ctx.state.me.authtoken;
   const Authemail = ctx.state.me.email;
-  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+  const cachedData = await AuthServices.getredisData(Authemail);
   const accessToken = JSON.parse(cachedData);
 
   oAuth2Client.setCredentials({
@@ -729,7 +729,7 @@ async function updateCalendarEventWithAttendees(
   //refresh Token
   const userid = ctx.state.me.id;
   const id = userid.toString();
-  const cachedDataref = await AuthenticateMiddleware.getredisData(id);
+  const cachedDataref = await AuthServices.getredisData(id);
 
   const refreshToken = JSON.parse(cachedDataref);
   console.log(refreshToken, "refreshtoken");

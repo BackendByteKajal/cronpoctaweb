@@ -10,7 +10,7 @@ import { RedisCache } from "../connection/redis-connection";
 import { RedisSessionExpires } from "../enum/redis-expire-session";
 //import { UserObject } from "../dtos/response/user-object-dto";
 import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
-
+const redisObj = RedisCache.connect();
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -53,18 +53,15 @@ export class AuthServices {
   }
 
   public static createToken(data: any) {
+    const expirationTimeInSeconds = 3 * 24 * 60 * 60; // 3 days
     const key = configData.jwt.key;
 
-    const token = jwt.sign(
-      { data },
-      key
-      // {expiresIn: 1000}
-    );
+    const token = jwt.sign({ data }, key, { expiresIn: expirationTimeInSeconds });
     return token;
   }
 
   public static redisCaching(userData: any, token: string) {
-    const redisObj = RedisCache.connect();
+    //const redisObj = RedisCache.connect();
     redisObj.set(
       token,
       JSON.stringify(userData),
@@ -72,14 +69,21 @@ export class AuthServices {
     );
   }
   public static redisCachingauth(userData: any, token: any) {
-    const redisObj = RedisCache.connect();
+    //const redisObj = RedisCache.connect();
     redisObj.set(
       token,
       JSON.stringify(userData),
       RedisSessionExpires.UserLogin
     );
   }
+  //
 
+  public static async getredisData(token: any) {
+    //const redisObj = RedisCache.connect();
+    const data = await redisObj.get(token);
+    return data;
+  }
+  
   //set cookies
   public static async setCookieAndReturnToken(
     ctx: Context,
