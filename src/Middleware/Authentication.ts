@@ -14,23 +14,23 @@ export class AuthenticateMiddleware {
       const accessToken = ctx.headers.authorization;
 
       if (!accessToken) {
-        throw new Error("You are not Authenticated..........");
+        throw new Error("Authentication failed: Missing access token.");
       }
       if (ctx.headers.authorization) {
         const accessToken = ctx.headers.authorization;
 
         if (!accessToken) {
-          throw new Error("You are not Authenticated.");
+          throw new Error("Authentication failed: Missing access token......");
         }
         const [bearer, token] = accessToken.split(" ");
 
         if (bearer !== "Bearer") {
-          throw new Error("You are not Authenticated.");
+          throw new Error("Authentication failed:Invalid token format.");
         }
 
-        const cachedData = await AuthenticateMiddleware.getredisData(token);
+        const cachedData = await AuthServices.getredisData(token);
         if (!cachedData) {
-          throw new Error("You are not Authenticated......");
+          throw new Error("You are not Authenticated.");
         }
 
         const decode = jwt.verify(token, configData.jwt.key);
@@ -50,19 +50,19 @@ export class AuthenticateMiddleware {
 
   ///
 
-  public static async getredisData(token: any) {
-    const redisObj = RedisCache.connect();
-    const data = await redisObj.get(token);
-    return data;
-  }
-  public static async getrediseventid(eventid: number) {
-    const redisObj = RedisCache.connect();
-    const data = await redisObj.get(eventid.toString());
-    return data;
-  }
+  // public static async getredisData(token: any) {
+  //   const redisObj = RedisCache.connect();
+  //   const data = await redisObj.get(token);
+  //   return data;
+  // }
+  // public static async getrediseventid(eventid: number) {
+  //   const redisObj = RedisCache.connect();
+  //   const data = await redisObj.get(eventid.toString());
+  //   return data;
+  // }
 
-  public static async slideExpiration(token: string) {
-    const redisObj = RedisCache.connect();
-    redisObj.expire(token, RedisSessionExpires.UserLogin);
-  }
+  // public static async slideExpiration(token: string) {
+  //   const redisObj = RedisCache.connect();
+  //   redisObj.expire(token, RedisSessionExpires.UserLogin);
+  // }
 }
