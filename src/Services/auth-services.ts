@@ -62,18 +62,17 @@ export class AuthServices {
 
   public static redisCaching(userData: any, token: string) {
     //const redisObj = RedisCache.connect();
-    redisObj.set(
-      token,
-      JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
-    );
+    const expirationInSeconds = 2 * 24 * 60 * 60; // 2 days
+    redisObj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
   }
+
+
   public static redisCachingauth(userData: any, token: any) {
     //const redisObj = RedisCache.connect();
     redisObj.set(
       token,
       JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
+      
     );
   }
   //
