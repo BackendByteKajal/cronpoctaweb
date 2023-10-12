@@ -56,23 +56,24 @@ export class AuthServices {
     const expirationTimeInSeconds = 3 * 24 * 60 * 60; // 3 days
     const key = configData.jwt.key;
 
-    const token = jwt.sign({ data }, key, { expiresIn: expirationTimeInSeconds });
+    const token = jwt.sign({ data }, key, {
+      expiresIn: expirationTimeInSeconds,
+    });
     return token;
   }
 
   public static redisCaching(userData: any, token: string) {
     //const redisObj = RedisCache.connect();
-    const expirationInSeconds = 2 * 24 * 60 * 60; // 2 days
+    const expirationInSeconds = 5 * 24 * 60 * 60; // 2 days
     redisObj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
   }
-
 
   public static redisCachingauth(userData: any, token: any) {
     //const redisObj = RedisCache.connect();
     redisObj.set(
       token,
-      JSON.stringify(userData),
-      
+      JSON.stringify(userData)
+      // RedisSessionExpires.UserLogin
     );
   }
   //
@@ -82,7 +83,14 @@ export class AuthServices {
     const data = await redisObj.get(token);
     return data;
   }
-  
+
+  //logout
+  public static async deleteToken(Token: any, ctx: Context) {
+    let [bearer, token] = Token.split(" ");
+    //const redisObj = await RedisCache.connect();
+    redisObj.del(token);
+    console.log(token, "token...");
+  }
   //set cookies
   public static async setCookieAndReturnToken(
     ctx: Context,

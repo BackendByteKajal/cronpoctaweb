@@ -70,11 +70,11 @@ export class UserServices {
     return true;
   }
 
-  //logout
-  public static async deleteToken(Token: any, ctx: Context) {
-    let [bearer, token] = Token.split(" ");
-    const redisObj = await RedisCache.connect();
-    redisObj.del(token);
-    console.log(token, "token...");
-  }
+  // //logout
+  // public static async deleteToken(Token: any, ctx: Context) {
+  //   let [bearer, token] = Token.split(" ");
+  //   const redisObj = await RedisCache.connect();
+  //   redisObj.del(token);
+  //   console.log(token, "token...");
+  // }
 }

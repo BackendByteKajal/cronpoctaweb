@@ -47,7 +47,7 @@ export class UserController {
     let Token = ctx.header.authorization;
     console.log(Token,"token")
     try {
-      const response = await UserServices.deleteToken(Token, ctx);
+      const response = await AuthServices.deleteToken(Token, ctx);
       ctx.body = Utils.successResponse("Logged Out Succesfully", {});
       ctx.response.status = 200;
     } catch (error: any) {
