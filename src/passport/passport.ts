@@ -51,9 +51,9 @@ passportmodule.use(
         const userid=user.id;
         const id=userid.toString(); 
         console.log(id)
-        AuthServices.redisCaching(accessToken, Authemail);
+        AuthServices.redisCaching(accessToken, Authemail);// access token
         if(refreshToken!=undefined){
-          AuthServices.redisCachingauth(refreshToken,id)
+          AuthServices.redisCachingauth(refreshToken,id)// refresh token
 
         }
         console.log(token, "token");

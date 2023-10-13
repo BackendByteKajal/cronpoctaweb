@@ -6,11 +6,11 @@ import { Message } from "../constants/message";
 // import { UserObject } from "../dtos/response/user-object-dto";
 import { Admin } from "../entities/admin-entity";
 
-import { RedisCache } from "../connection/redis-connection";
+import { redisobj } from "../app";
 import { RedisSessionExpires } from "../enum/redis-expire-session";
 //import { UserObject } from "../dtos/response/user-object-dto";
 import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
-const redisObj = RedisCache.connect();
+
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -51,9 +51,9 @@ export class AuthServices {
       throw err;
     }
   }
-
+//jwt Token
   public static createToken(data: any) {
-    const expirationTimeInSeconds = 3 * 24 * 60 * 60; // 3 days
+    const expirationTimeInSeconds = 5 * 24 * 60 * 60; // 5 days
     const key = configData.jwt.key;
 
     const token = jwt.sign({ data }, key, {
@@ -62,15 +62,16 @@ export class AuthServices {
     return token;
   }
 
+  //
   public static redisCaching(userData: any, token: string) {
     //const redisObj = RedisCache.connect();
-    const expirationInSeconds = 5 * 24 * 60 * 60; // 2 days
-    redisObj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
+    const expirationInSeconds = 5 * 24 * 60 * 60; // 5 days
+    redisobj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
   }
 
   public static redisCachingauth(userData: any, token: any) {
     //const redisObj = RedisCache.connect();
-    redisObj.set(
+    redisobj.set(
       token,
       JSON.stringify(userData)
       // RedisSessionExpires.UserLogin
@@ -80,7 +81,7 @@ export class AuthServices {
 
   public static async getredisData(token: any) {
     //const redisObj = RedisCache.connect();
-    const data = await redisObj.get(token);
+    const data = await redisobj.get(token);
     return data;
   }
 
@@ -88,7 +89,7 @@ export class AuthServices {
   public static async deleteToken(Token: any, ctx: Context) {
     let [bearer, token] = Token.split(" ");
     //const redisObj = await RedisCache.connect();
-    redisObj.del(token);
+    redisobj.del(token);
     console.log(token, "token...");
   }
   //set cookies
