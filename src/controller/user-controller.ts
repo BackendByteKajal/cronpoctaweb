@@ -44,7 +44,7 @@ export class UserController {
   
 //logout
   public static async removeToken(ctx: Context) {
-    let Token = ctx.header.authorization;
+    let Token = ctx.headers.authorization;
     console.log(Token,"token")
     try {
       const response = await AuthServices.deleteToken(Token, ctx);
