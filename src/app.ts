@@ -36,7 +36,7 @@ app.use(passportmodule.session());
 app.use(
   session(
     {
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 6 * 24 * 60 * 60 * 1000, // 1 day
       renew: true,
     },
     app

@@ -12,6 +12,7 @@ export class UserLoginObject {
   authtoken: string;
   googleid: number;
   guestName: string;
+  refreshtoken:string;
 
   public static convertToObj(userObj: User): UserLoginObject {
     const resp = Builder<UserLoginObject>()
@@ -20,7 +21,7 @@ export class UserLoginObject {
       .userName(userObj.user_name)
       .last_name(userObj.last_name)
       .is_verified(userObj.is_verified)
-      //.authtoken(userObj.authtoken);
+      .refreshtoken(userObj.refreshtoken);
 
     return resp.build();
   }

@@ -25,7 +25,7 @@ export class User extends BaseEntity {
 
   private _accesstoken: string;
   private _googleid: string;
-  //private _authtoken: string;
+  private _refreshtoken: string;
 
   @PrimaryGeneratedColumn()
   public get id(): number {
@@ -74,13 +74,13 @@ export class User extends BaseEntity {
   // public set googleid(googleid: string) {
   //   this._googleid = googleid;
   // }
-  // @Column({ nullable: true })
-  // public get authtoken(): string {
-  //   return this._authtoken;
-  // }
-  // public set authtoken(authtoken: string) {
-  //   this._authtoken = authtoken;
-  // }
+  @Column({ nullable: true })
+  public get refreshtoken(): string {
+    return this._refreshtoken;
+  }
+  public set refreshtoken(refreshtoken: string) {
+    this._refreshtoken = refreshtoken;
+  }
 
   @CreateDateColumn()
   created_at: Date; // Creation date
@@ -97,7 +97,7 @@ export class User extends BaseEntity {
       .user_name(registerObj.userName)
       .last_name(registerObj.lastName)
       .is_verified(true)
-      //.authtoken(registerObj.authtoken)
+      .refreshtoken(registerObj.refreshtoken)
 
       .build();
 

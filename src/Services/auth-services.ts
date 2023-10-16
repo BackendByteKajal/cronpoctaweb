@@ -51,7 +51,8 @@ export class AuthServices {
       throw err;
     }
   }
-//jwt Token
+  //jwt Token
+
   public static createToken(data: any) {
     const expirationTimeInSeconds = 5 * 24 * 60 * 60; // 5 days
     const key = configData.jwt.key;
@@ -62,22 +63,23 @@ export class AuthServices {
     return token;
   }
 
-  //
+  // set value in redis
   public static redisCaching(userData: any, token: string) {
-    //const redisObj = RedisCache.connect();
+    
     const expirationInSeconds = 5 * 24 * 60 * 60; // 5 days
     redisobj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
   }
 
-  public static redisCachingauth(userData: any, token: any) {
-    //const redisObj = RedisCache.connect();
-    redisobj.set(
-      token,
-      JSON.stringify(userData)
-      // RedisSessionExpires.UserLogin
-    );
-  }
-  //
+  // //set refresh token redis
+  // public static redisCachingauth(userData: any, token: any) {
+    
+  //   redisobj.set(
+  //     token,
+  //     JSON.stringify(userData)
+  //     // RedisSessionExpires.UserLogin
+  //   );
+  // }
+  // //
 
   public static async getredisData(token: any) {
     //const redisObj = RedisCache.connect();
@@ -89,9 +91,13 @@ export class AuthServices {
   public static async deleteToken(Token: any, ctx: Context) {
     let [bearer, token] = Token.split(" ");
     //const redisObj = await RedisCache.connect();
+    
+    
     redisobj.del(token);
+    
     console.log(token, "token...");
   }
+  
   //set cookies
   public static async setCookieAndReturnToken(
     ctx: Context,

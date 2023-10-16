@@ -32,13 +32,15 @@ passportmodule.use(
     ) => {
       console.log("accesstoken",accessToken)
       console.log(refreshToken,"refreshToken")
+     //user data
       const data = {
         userName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
-        //authtoken: accessToken,
+        refreshtoken: refreshToken,
         is_varified: profile.emails[0].verified,
       };
+
       const userdata: User | null = await UserServices.Registeruser(data);
 
       if (userdata) {
@@ -46,16 +48,14 @@ passportmodule.use(
         console.log(profile)
         
         const token = AuthServices.createToken(user);
-        AuthServices.redisCaching(user, token);
-        const Authemail = user.email;
-        const userid=user.id;
-        const id=userid.toString(); 
-        console.log(id)
-        AuthServices.redisCaching(accessToken, Authemail);// access token
-        if(refreshToken!=undefined){
-          AuthServices.redisCachingauth(refreshToken,id)// refresh token
 
-        }
+        AuthServices.redisCaching(user, token);// bearer token
+        
+        const Authemail = user.email;
+        
+        AuthServices.redisCaching(accessToken, Authemail);// access token
+
+       
         console.log(token, "token");
         done(null, user, token);
       }
