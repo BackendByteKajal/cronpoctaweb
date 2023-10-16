@@ -219,11 +219,8 @@ export class BookingServices {
           const cachedData = await AuthServices.getredisData(Email);
           const accesstoken = JSON.parse(cachedData);
 
-          //refresh Token
-          const userid = ctx.state.me.id;
-          const id = userid.toString();
-          const cachedDataref = await AuthServices.getredisData(id);
-          const refreshToken = JSON.parse(cachedDataref);
+          
+          const refreshToken = ctx.state.me.refreshtoken;
           console.log(refreshToken, "refreshtoken");
 
           const guestsArray = bookingData.guests;
@@ -451,12 +448,8 @@ export class BookingServices {
 
     const cachedData = await AuthServices.getredisData(email);
     const accesstoken = JSON.parse(cachedData);
-    //refresh Token
-    const userid = ctx.state.me.id;
-    const id = userid.toString();
-    const cachedDataref = await AuthServices.getredisData(id);
-
-    const refreshToken = JSON.parse(cachedDataref);
+   
+    const refreshToken = ctx.state.me.refreshtoken;
     console.log(refreshToken, "refreshtoken");
 
     try {
@@ -559,10 +552,8 @@ async function calendarnotification(
   //set creadential access token and refresh token
   oAuth2Client.credentials.access_token = accesstoken;
   //refresh Token
-  const userid = ctx.state.me.id;
-  const id = userid.toString();
-  const cachedDataref = await AuthServices.getredisData(id);
-  const refreshToken = JSON.parse(cachedDataref);
+  
+  const refreshToken = ctx.state.me.refreshtoken;
   console.log(refreshToken, "refreshtoken");
   oAuth2Client.credentials.refresh_token = refreshToken;
 
@@ -588,7 +579,7 @@ async function calendarnotification(
       auth: oAuth2Client,
       conferenceDataVersion: 1,
       key: apiKey,
-      // sendNotifications:true,
+       sendNotifications:true,
       requestBody: {
         summary: requestData.title,
 
@@ -677,14 +668,11 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
     oAuth2Client.credentials.access_token = accessToken;
 
     //refresh Token
-    const userid = ctx.state.me.id;
-    const id = userid.toString();
-    const cachedDataref = await AuthServices.getredisData(id);
-    if (cachedDataref != undefined) {
-      const refreshToken = JSON.parse(cachedDataref);
+   
+      const refreshToken = ctx.state.me.refreshtoken;
       console.log(refreshToken, "refreshtoken");
       oAuth2Client.credentials.refresh_token = refreshToken;
-    }
+   
 
     const jsonString = JSON.stringify(eventiid);
 
@@ -695,7 +683,7 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
       eventId: eventid,
       auth: oAuth2Client,
       key: apiKey,
-      // sendNotifications: true,
+      sendNotifications: true,
     });
 
     console.log("Event deleted from Google Calendar:", eventid);
@@ -727,11 +715,8 @@ async function updateCalendarEventWithAttendees(
   oAuth2Client.credentials.access_token = accessToken;
 
   //refresh Token
-  const userid = ctx.state.me.id;
-  const id = userid.toString();
-  const cachedDataref = await AuthServices.getredisData(id);
-
-  const refreshToken = JSON.parse(cachedDataref);
+ 
+  const refreshToken = ctx.state.me.refreshtoken;
   console.log(refreshToken, "refreshtoken");
   oAuth2Client.credentials.refresh_token = refreshToken;
 
@@ -767,7 +752,7 @@ async function updateCalendarEventWithAttendees(
       summary: editedData.title,
       conferenceDataVersion: 1,
       key: apiKey,
-      //sendNotifications: true,
+      sendNotifications: true,
 
       description: `Meeting Room Name: ${roomName}\nDescription: ${editedData.description}`,
       start: {
