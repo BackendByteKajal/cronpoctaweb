@@ -32,7 +32,7 @@ export class AuthController {
       const user = ctx.state.user;
       const token = ctx.state.authInfo;
       const userId = user.id;
-
+      
       await AuthServices.setCookieAndReturnToken(ctx, "beareltoken", token);
       await AuthServices.setCookieAndReturnToken(ctx, "userdata", userId);
 

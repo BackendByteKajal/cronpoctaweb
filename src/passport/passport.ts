@@ -21,7 +21,8 @@ passportmodule.use(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: `${Google_callbackURL}/google/callback`,
+     callbackURL: `${Google_callbackURL}/google/callback`,
+      //callbackURL: "/google/callback",
     },
     async (
       accessToken: string,
@@ -29,23 +30,32 @@ passportmodule.use(
       profile: any,
       done: any
     ) => {
-      
+      console.log("accesstoken",accessToken)
+      console.log(refreshToken,"refreshToken")
+     //user data
       const data = {
         userName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
-        //authtoken: accessToken,
+        refreshtoken: refreshToken,
         is_varified: profile.emails[0].verified,
       };
+
       const userdata: User | null = await UserServices.Registeruser(data);
 
       if (userdata) {
         let user = UserLoginObject.convertToObj(userdata);
-        console.log(profile);
+        console.log(profile)
+        
         const token = AuthServices.createToken(user);
-        AuthServices.redisCaching(user, token);
+
+        AuthServices.redisCaching(user, token);// bearer token
+        
         const Authemail = user.email;
-        AuthServices.redisCaching(accessToken, Authemail);
+        
+        AuthServices.redisCaching(accessToken, Authemail);// access token
+
+       
         console.log(token, "token");
         done(null, user, token);
       }

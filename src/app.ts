@@ -24,6 +24,7 @@ app.keys = ["mrbskey"];
 import session from "koa-session";
 
 import passportmodule from "koa-passport";
+import { RedisCache } from "./connection/redis-connection";
 app.use(bodyParser());
 app.use(json());
 app.use(cors());
@@ -35,7 +36,7 @@ app.use(passportmodule.session());
 app.use(
   session(
     {
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 6 * 24 * 60 * 60 * 1000, // 1 day
       renew: true,
     },
     app
@@ -53,4 +54,5 @@ PostgresDbConnection.connect();
 
 app.use(swaggerUI.serve);
 app.use(swaggerUI.setup(swaggerJSDocs));
+export const redisobj = RedisCache.connect();
 export default app;

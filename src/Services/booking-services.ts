@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import { BookingRoomDto } from "../dtos/request/booking-dto";
+import { BookingRoomDto, BookingRoom } from "../dtos/request/booking-dto";
 import { BookingResponseObj } from "../dtos/response/booking-response-dto";
 import { Booking } from "../entities/booking-entity";
 import { MeetingRoom } from "../entities/meeting_room-entity";
@@ -22,7 +22,7 @@ const apiKey = process.env.GOOGLE_API_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = `${process.env.BACKEND_URL}/google/callback`;
-//const CALLBACK_URL = "https://ba08-27-107-28-2.ngrok-free.app/google/callback";
+//const CALLBACK_URL = "/google/callback";
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 const calendar = google.calendar("v3"); // Create an instance of the Calendar service
 const oAuth2Client = new google.auth.OAuth2(
@@ -32,10 +32,10 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 
 export class BookingServices {
-  public static async bookMeetRoom(
-    bookingDetails: BookingRoomDto,
-    ctx: Context
-  ) {
+  public static async bookMeetRoom(bookingDetails: BookingRoom, ctx: Context) {
+    const calstart = bookingDetails.clstartTime;
+    const calend = bookingDetails.clendTime;
+
     const userid = ctx.state.me.id;
     try {
       const {
@@ -63,9 +63,9 @@ export class BookingServices {
           userId: userid,
         };
         const data = Booking.BookingRoomObj(bookRoomData);
-
+        const calenderstarttime = bookingDetails.clstartTime;
         // send calender notification
-        const result = await calendarnotification(data, ctx);
+        const result = await calendarnotification(data, ctx, calstart, calend);
 
         if (result.success) {
           const eventId = result.response?.id; // Event ID
@@ -213,11 +213,15 @@ export class BookingServices {
         if (success) {
           await Booking.delete(bookingId);
           //
-          const Email = ctx.state.me.email;
 
+          const Email = ctx.state.me.email;
           //Access Token
-          const cachedData = await AuthenticateMiddleware.getredisData(Email);
+          const cachedData = await AuthServices.getredisData(Email);
           const accesstoken = JSON.parse(cachedData);
+
+          
+          const refreshToken = ctx.state.me.refreshtoken;
+          console.log(refreshToken, "refreshtoken");
 
           const guestsArray = bookingData.guests;
           // Send booking confirmation email
@@ -225,7 +229,8 @@ export class BookingServices {
             const emailSent = await sendEmaildelete(
               bookingData,
               accesstoken,
-              Email
+              Email,
+              refreshToken
             );
           }
           //
@@ -433,15 +438,20 @@ export class BookingServices {
 
   public static async doEditBookings(
     bookingId: number,
-    bookingDetails: BookingRoomDto,
+    bookingDetails: BookingRoom,
     ctx: Context
   ) {
     let eventid = "";
-
+    const startcal = bookingDetails.clstartTime;
+    const endcal = bookingDetails.clendTime;
     const email = ctx.state.me.email;
 
-    const cachedData = await AuthenticateMiddleware.getredisData(email);
+    const cachedData = await AuthServices.getredisData(email);
     const accesstoken = JSON.parse(cachedData);
+   
+    const refreshToken = ctx.state.me.refreshtoken;
+    console.log(refreshToken, "refreshtoken");
+
     try {
       const bookings: Booking | null = await Booking.findOneBy({
         id: bookingId,
@@ -485,12 +495,20 @@ export class BookingServices {
 
         const editedData = BookingResponseObj.convertBookingToObj(bookingData);
         //send email to remove guest
-        await sendEmaileRemoveguest(booking, accesstoken, email, bookingData);
+        await sendEmaileRemoveguest(
+          booking,
+          accesstoken,
+          email,
+          bookingData,
+          refreshToken
+        );
         //update calender event
         const editevent = await updateCalendarEventWithAttendees(
           eventid,
           editedData,
-          ctx
+          ctx,
+          startcal,
+          endcal
         );
         const room_name = await this.MeetRoomName(bookingDetails.meetRoomId);
 
@@ -519,18 +537,27 @@ export class BookingServices {
 
 //create calender notification
 
-async function calendarnotification(requestData: Booking, ctx: Context) {
-    //Aceess Token
+async function calendarnotification(
+  requestData: Booking,
+  ctx: Context,
+  clstart: string,
+  clend: string
+) {
+  console.log("calender");
+  //Aceess Token
   const Authemail = ctx.state.me.email;
-  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
-  const accesstoken = JSON.parse(cachedData);
-  oAuth2Client.setCredentials({
-    access_token: accesstoken,
-  });
+  const cachedData = await AuthServices.getredisData(Authemail);
 
+  let accesstoken = JSON.parse(cachedData);
+  //set creadential access token and refresh token
   oAuth2Client.credentials.access_token = accesstoken;
-  const Guest: any = requestData.guests;
+  //refresh Token
+  
+  const refreshToken = ctx.state.me.refreshtoken;
+  console.log(refreshToken, "refreshtoken");
+  oAuth2Client.credentials.refresh_token = refreshToken;
 
+  const Guest: any = requestData.guests;
   const GuestsEmail = Guest.map((guest: { guests: string }) => ({
     email: guest.guests,
   }));
@@ -545,25 +572,26 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
   const meetroom = await MeetingRoom.findOneBy({ id: requestData.meetroom_id });
 
   const roomName = meetroom?.room_name;
-
+  const timezone = "";
   try {
     const response = await calendar.events.insert({
       calendarId: "primary",
       auth: oAuth2Client,
       conferenceDataVersion: 1,
       key: apiKey,
+       sendNotifications:true,
       requestBody: {
         summary: requestData.title,
 
-        description: `meetroomname:${roomName} meetdescription:${requestData.description}`,
+        description: `Meeting Room Name: ${roomName}  \n Description: ${requestData.description}`,
 
         start: {
-          dateTime: eventStartTime,
-          timeZone: "Asia/Kolkata",
+          dateTime: clstart,
+          timeZone: timezone,
         },
         end: {
-          dateTime: eventEndTime,
-          timeZone: "Asia/Kolkata",
+          dateTime: clend,
+          timeZone: timezone,
         },
         attendees: GuestsEmail,
         conferenceData: {
@@ -590,7 +618,8 @@ async function calendarnotification(requestData: Booking, ctx: Context) {
             Email,
             calenderurl,
             roomName,
-            googleMeetLink
+            googleMeetLink,
+            refreshToken
           );
         }
       }
@@ -629,7 +658,7 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
   try {
     //const accessToken = ctx.state.me.authtoken;
     const Authemail = ctx.state.me.email;
-    const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+    const cachedData = await AuthServices.getredisData(Authemail);
     const accessToken = JSON.parse(cachedData);
 
     oAuth2Client.setCredentials({
@@ -637,6 +666,13 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
     });
 
     oAuth2Client.credentials.access_token = accessToken;
+
+    //refresh Token
+   
+      const refreshToken = ctx.state.me.refreshtoken;
+      console.log(refreshToken, "refreshtoken");
+      oAuth2Client.credentials.refresh_token = refreshToken;
+   
 
     const jsonString = JSON.stringify(eventiid);
 
@@ -647,6 +683,7 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
       eventId: eventid,
       auth: oAuth2Client,
       key: apiKey,
+      sendNotifications: true,
     });
 
     console.log("Event deleted from Google Calendar:", eventid);
@@ -662,11 +699,13 @@ async function deleteCalendarEvent(eventiid: string, ctx: Context) {
 async function updateCalendarEventWithAttendees(
   eventid: string,
   editedData: BookingResponseObj,
-  ctx: Context
+  ctx: Context,
+  starcal: string,
+  endcal: string
 ) {
   //const accessToken = ctx.state.me.authtoken;
   const Authemail = ctx.state.me.email;
-  const cachedData = await AuthenticateMiddleware.getredisData(Authemail);
+  const cachedData = await AuthServices.getredisData(Authemail);
   const accessToken = JSON.parse(cachedData);
 
   oAuth2Client.setCredentials({
@@ -674,6 +713,13 @@ async function updateCalendarEventWithAttendees(
   });
 
   oAuth2Client.credentials.access_token = accessToken;
+
+  //refresh Token
+ 
+  const refreshToken = ctx.state.me.refreshtoken;
+  console.log(refreshToken, "refreshtoken");
+  oAuth2Client.credentials.refresh_token = refreshToken;
+
   try {
     const event = await calendar.events.get({
       calendarId: "primary",
@@ -701,19 +747,21 @@ async function updateCalendarEventWithAttendees(
     });
 
     const roomName = meetroom?.room_name;
-
+    const timezone = "";
     const updateevevent = {
       summary: editedData.title,
       conferenceDataVersion: 1,
       key: apiKey,
-      description: `MeetroomName:${roomName} Description:${editedData.description}`,
+      sendNotifications: true,
+
+      description: `Meeting Room Name: ${roomName}\nDescription: ${editedData.description}`,
       start: {
-        dateTime: startdatetime,
-        timeZone: "Asia/Kolkata",
+        dateTime: starcal,
+        timeZone: timezone,
       },
       end: {
-        dateTime: enddatetime,
-        timeZone: "Asia/Kolkata",
+        dateTime: endcal,
+        timeZone: timezone,
       },
       attendees: newAttendees, // Update attendees here
       // Add or modify any other event properties as needed
@@ -747,7 +795,8 @@ async function updateCalendarEventWithAttendees(
             Email,
             calenderurl,
             roomName,
-            googleMeetLink
+            googleMeetLink,
+            refreshToken
           );
         }
       }
@@ -768,16 +817,18 @@ async function sendEmail(
   Email: string,
   calenderurl: string,
   meetroomname: string,
-  googleMeetLink: string
+  googleMeetLink: string,
+  refreshToken: string
 ) {
   try {
-    oAuth2Client.setCredentials({
-      access_token: access_token,
-    });
+    // oAuth2Client.setCredentials({
+    //   access_token: access_token,
+    // });
 
-    oAuth2Client.credentials.access_token = access_token;
+    // oAuth2Client.credentials.refresh_token = access_token;
 
     // Create a Nodemailer transporter with OAuth2 authentication
+
     const transporter = nodemailer.createTransport({
       service: "gmail", // Or your email provider
       auth: {
@@ -785,9 +836,11 @@ async function sendEmail(
         user: Email, // Your email address
         clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
         clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
-        accessToken: access_token, // Access token passed as an argument
+        accessToken: access_token,
+        refreshToken: refreshToken,
       },
     });
+
     const emailarr: any = bookingDetails.guests;
     const GuestsEmail = emailarr.map((guest: { guests: string }) => ({
       email: guest.guests,
@@ -801,12 +854,13 @@ async function sendEmail(
     const mailOptions = {
       from: Email, // Your email address
       to: emailAddresses, // Recipient's email addresses
-      subject: `Meeting Invitation: ${bookingDetails.title}`,
-      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. \n Description: ${bookingDetails.description} \n  MeetRoomName:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
+      subject: `Meeting Invitations: ${bookingDetails.title}`,
+      text: `You are invited to a meeting scheduled for ${bookingDetails.date} from ${bookingDetails.start_time} to ${bookingDetails.end_time}. \n Description: ${bookingDetails.description} \n  Meeting Room Name:${meetroomname} \n CalenderUrl:${calenderurl} \n GoogleMeetLink:${googleMeetLink}`,
       // html: "<h1>Meeting set</h1>",
     };
 
     // Send the email
+
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
   } catch (error) {
@@ -818,7 +872,8 @@ async function sendEmail(
 async function sendEmaildelete(
   bookingDetails: Booking,
   access_token: string,
-  Email: string
+  Email: string,
+  refresh_token: string
 ) {
   try {
     oAuth2Client.setCredentials({
@@ -835,6 +890,7 @@ async function sendEmaildelete(
         clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
         clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
         accessToken: access_token, // Access token passed as an argument
+        refreshToken: refresh_token,
       },
     });
     const emailarr: any = bookingDetails.guests;
@@ -871,7 +927,8 @@ async function sendEmailEdit(
   Email: string,
   calenderurl: string,
   meetroomname: string,
-  googlemeetlink: string
+  googlemeetlink: string,
+  refreshtoken: string
 ) {
   try {
     oAuth2Client.setCredentials({
@@ -888,6 +945,7 @@ async function sendEmailEdit(
         clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
         clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
         accessToken: access_token, // Access token passed as an argument
+        refreshToken: refreshtoken,
       },
     });
 
@@ -923,7 +981,8 @@ async function sendEmaileRemoveguest(
   bookingDetails: Booking,
   access_token: string,
   Email: string,
-  editedBookingData: Booking
+  editedBookingData: Booking,
+  refreshToken: string
 ) {
   let sender;
   try {
@@ -970,6 +1029,7 @@ async function sendEmaileRemoveguest(
           clientId: process.env.GOOGLE_CLIENT_ID, // Use your client ID here
           clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Use your client secret here
           accessToken: access_token, // Access token passed as an argument
+          refreshToken: refreshToken,
         },
       });
 

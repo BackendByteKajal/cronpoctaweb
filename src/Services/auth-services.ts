@@ -6,7 +6,7 @@ import { Message } from "../constants/message";
 // import { UserObject } from "../dtos/response/user-object-dto";
 import { Admin } from "../entities/admin-entity";
 
-import { RedisCache } from "../connection/redis-connection";
+import { redisobj } from "../app";
 import { RedisSessionExpires } from "../enum/redis-expire-session";
 //import { UserObject } from "../dtos/response/user-object-dto";
 import { UserLoginObject } from "../dtos/response/userlogin-object-dto";
@@ -39,6 +39,7 @@ export class AuthServices {
 
   public static async isAdminExists(email: string) {
     try {
+      //const lowercaseEmail = email.toLowerCase();
       const user = await Admin.findOne({
         where: { email: email },
       });
@@ -50,35 +51,53 @@ export class AuthServices {
       throw err;
     }
   }
+  //jwt Token
 
   public static createToken(data: any) {
+    const expirationTimeInSeconds = 5 * 24 * 60 * 60; // 5 days
     const key = configData.jwt.key;
 
-    const token = jwt.sign(
-      { data },
-      key
-      // {expiresIn: 1000}
-    );
+    const token = jwt.sign({ data }, key, {
+      expiresIn: expirationTimeInSeconds,
+    });
     return token;
   }
 
+  // set value in redis
   public static redisCaching(userData: any, token: string) {
-    const redisObj = RedisCache.connect();
-    redisObj.set(
-      token,
-      JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
-    );
-  }
-  public static redisCachingauth(userData: any, token: string) {
-    const redisObj = RedisCache.connect();
-    redisObj.set(
-      token,
-      JSON.stringify(userData),
-      RedisSessionExpires.UserLogin
-    );
+    
+    const expirationInSeconds = 5 * 24 * 60 * 60; // 5 days
+    redisobj.set(token, JSON.stringify(userData), { EX: expirationInSeconds });
   }
 
+  // //set refresh token redis
+  // public static redisCachingauth(userData: any, token: any) {
+    
+  //   redisobj.set(
+  //     token,
+  //     JSON.stringify(userData)
+  //     // RedisSessionExpires.UserLogin
+  //   );
+  // }
+  // //
+
+  public static async getredisData(token: any) {
+    //const redisObj = RedisCache.connect();
+    const data = await redisobj.get(token);
+    return data;
+  }
+
+  //logout
+  public static async deleteToken(Token: any, ctx: Context) {
+    let [bearer, token] = Token.split(" ");
+    //const redisObj = await RedisCache.connect();
+    
+    
+    redisobj.del(token);
+    
+    console.log(token, "token...");
+  }
+  
   //set cookies
   public static async setCookieAndReturnToken(
     ctx: Context,

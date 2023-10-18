@@ -12,6 +12,21 @@ export class BookingRoomDto {
     
   }
 
+  export class BookingRoom {
+    userId: number;
+    meetRoomId: number;
+    title: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    status: string;
+    guests: string[];
+    description: string;
+    eventid: any;
+    clstartTime: string;
+    clendTime: string;
+  }
+
   export class BookingRoomWithUserDto {
     userId: number;
     meetRoomId: number;
