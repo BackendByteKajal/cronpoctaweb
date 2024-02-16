@@ -47,7 +47,7 @@ async function createClientData(row, param) {
     });
     console.log(clientData, "**444444444444444444444444444");
     // Schedule the email job for the new client data
-    scheduleEmail(clientData, db);
+    //scheduleEmail(clientData, db);
     return {
       success: true,
       message: "Data Inserted Successfully",
