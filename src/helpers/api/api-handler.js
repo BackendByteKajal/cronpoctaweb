@@ -1,5 +1,4 @@
-import { errorHandler, jwtMiddleware } from "../../helpers/api";
-
+import { errorHandler } from "../../helpers/api/error-handler";
 export { apiHandler };
 
 function apiHandler(handler) {
@@ -11,7 +10,7 @@ function apiHandler(handler) {
     }
     try {
       // global middleware
-     // await jwtMiddleware(req, res);
+      // await jwtMiddleware(req, res);
 
       // route handler
       await handler[method](req, res);
