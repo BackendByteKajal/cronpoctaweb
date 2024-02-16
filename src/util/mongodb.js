@@ -24,6 +24,7 @@ if (!dbName) {
 
 export async function connectToDatabase() {
   if (process.env.NODE_ENV === "development") {
+    console.log(process.env.NODE_ENV, "process.env.NODE_ENV");
     // In development mode, use a global variable so that the value
     // is preserved across module reloads caused by HMR (Hot Module Replacement).
     if (!global._mongoClientPromise) {
@@ -33,6 +34,7 @@ export async function connectToDatabase() {
     }
     if (!clientPromise) clientPromise = global._mongoClientPromise;
   } else {
+     console.log(process.env.NODE_ENV, "process.env.NODE_ENV");
     // In production mode, it's best to not use a global variable.
     client = new MongoClient(uri, options);
     clientPromise = client.connect();
