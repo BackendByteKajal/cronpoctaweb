@@ -8,6 +8,7 @@ export const clientRepo = {
   scheduleEmail,
   checkAndUpdateStatusDifference,
   sendEMailToAdmin,
+  triggerEmail,
 };
 
 // Function to create client data
@@ -47,7 +48,7 @@ async function createClientData(row, param) {
     });
     console.log(clientData, "**444444444444444444444444444");
     // Schedule the email job for the new client data
-    scheduleEmail(clientData, db);
+    //scheduleEmail(clientData, db);
     return {
       success: true,
       message: "Data Inserted Successfully",
@@ -88,11 +89,11 @@ async function executeScheduledTask(clientId, interval, db) {
     if (collection.length) {
       // Check and update status based on time difference
       let sendEmail = await checkAndUpdateStatusDifference(collection, db);
-          if (sendEmail) {
-            // If no active client data, stop the scheduled task
-            console.log("stop");
-            clearInterval(interval);
-          }
+      if (sendEmail) {
+        // If no active client data, stop the scheduled task
+        console.log("stop");
+        clearInterval(interval);
+      }
     } else {
       // If no active client data, stop the scheduled task
       console.log("stop");
@@ -116,6 +117,7 @@ async function executeScheduledTask(clientId, interval, db) {
 
 // Function to check conditions and call email function
 async function checkAndUpdateStatusDifference(doc, db) {
+  console.log(doc, "doc...........");
   const currentTime = new Date();
   // Calculate the time difference in milliseconds
   const timeDifference = currentTime - doc[0].updated_time;
@@ -139,12 +141,12 @@ async function checkAndUpdateStatusDifference(doc, db) {
         return false;
       }
     } else {
-        console.error("Error sending email:", error);
-       throw new Error("Failed to send email. Please try again later.....");
-        return false;
+      console.error("Error sending email:", error);
+      throw new Error("Failed to send email. Please try again later.....");
+      return false;
     }
   } else {
-      console.log("No action needed, time difference is within 10 minute");
+    console.log("No action needed, time difference is within 10 minute");
     return false;
   }
 }
@@ -187,5 +189,73 @@ async function sendEMailToAdmin(id, token, param) {
       message: new Error(error).message,
       success: false,
     };
+  }
+}
+
+// Trigger Email
+async function triggerEmail() {
+  try {
+    const { db } = await connectToDatabase();
+    // Find the active client data
+    const collection = await db
+      .collection("client")
+      .find({ status: "Active" })
+      .toArray();
+
+    // Array to store clients for which emails were sent
+    const clientsWithSentEmails = [];
+
+    // Iterate through each client and trigger email
+    for (const client of collection) {
+      const emailSent = await checkStatusDifference(client, db);
+      if (emailSent) {
+        // If email was sent successfully, add the client to the array
+        clientsWithSentEmails.push(client);
+      }
+    }
+    return {
+      success: true,
+      message: "Emails sent successfully to admin.",
+      clients: clientsWithSentEmails,
+    };
+  } catch (error) {
+    console.error("Error triggering email:", error);
+    throw new Error("Failed to trigger email. Please try again later.");
+  }
+}
+
+// Function to check conditions and call email function
+async function checkStatusDifference(doc, db) {
+  console.log(doc, "doc...........***********************************");
+  const currentTime = new Date();
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentTime - doc.updated_time;
+  // Check conditions
+  if (timeDifference > 1 * 60 * 1000) {
+    console.log("9 min diff");
+    // Call your email sending function
+    const sendEmailResult = await sendEmailClientData(doc, "token");
+    if (sendEmailResult) {
+      // Update status to "inActive" if email is sent successfully
+      const updatedData = await db.collection("client").updateOne(
+        {
+          _id: new ObjectId(doc._id),
+        },
+        { $set: { status: "inActive" } }
+      );
+
+      if (updatedData.modifiedCount === 1) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      console.log("Error sending email:", error, doc.Name);
+
+      return false;
+    }
+  } else {
+    console.log("No action needed, time difference is within 10 minute");
+    return false;
   }
 }
