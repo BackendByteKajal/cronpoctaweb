@@ -204,7 +204,7 @@ async function triggerEmail() {
 
     // Array to store clients for which emails were sent
     const clientsWithSentEmails = [];
-
+ 
     // Iterate through each client and trigger email
     for (const client of collection) {
       const emailSent = await checkStatusDifference(client, db);
