@@ -5,11 +5,6 @@
       "schedule": "0 4 * * *"
 
     }
-,
-    {
-      "path": "/api/cron/triggeremail",
-      "schedule": "0 6 * * *"
 
-    }
   ]
 }
